@@ -58,3 +58,18 @@
 - Suíte completa: 138 testes, 1.062 assertions e nenhuma falha; 43 casos foram adicionados nesta etapa.
 - Pint, build e auditorias Composer/pnpm passaram; não há analisador estático configurado.
 - Próximo passo: implementar a interface jogável desktop/mobile em Livewire, consumindo as actions sem duplicar regras no frontend.
+
+## 2026-10-06 — Etapa 6
+
+- A rota autenticada `/game` passou a renderizar `GameBoard`, componente Livewire que inicia, retoma, atualiza e abandona a sessão do próprio usuário.
+- O grid consumido é o snapshot persistido; a lista usa termos originais e nenhum placement pendente é enviado ao HTML.
+- Pointer Events unificam mouse, caneta e toque. JavaScript calcula somente trajetórias visuais retas e envia as quatro coordenadas ao backend.
+- Palavras encontradas ficam destacadas, progresso é autoritativo e conclusão/abandono bloqueiam novas seleções.
+- O cronômetro visual deriva de `started_at`, sobrevive a reload e é substituído pela duração oficial ao encerrar.
+- Foram adicionados tutorial em dialog nativo, confirmação de abandono, feedback `aria-live`, foco visível e mensagens além de cor.
+- Rate limits por usuário + IP protegem início, seleções e abandono; payloads não aceitam sessão, termo, score ou estado.
+- Layout mobile-first mantém o tabuleiro fluido e move os painéis de progresso/termos para baixo do grid antes do breakpoint desktop.
+- Adicionados 14 testes PHPUnit e 5 testes JavaScript; suíte final: 152 testes PHP, 1.127 assertions e 5 testes JS, sem falhas.
+- Pint, Composer validate, Vite build e auditorias Composer/pnpm passaram.
+- A validação visual automatizada não pôde ser executada porque a conexão do navegador disponibilizado pelo ambiente foi recusada; a pendência foi documentada sem alegação de screenshots.
+- Próximo passo: implementar pontuação e regras de recompensa no backend.

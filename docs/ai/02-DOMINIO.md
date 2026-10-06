@@ -58,6 +58,16 @@ ACTIVE
 - Estados finais não recebem novos acertos nem alterações de snapshot.
 - `started_at`, `found_at`, `finished_at` e `duration_seconds` são definidos ou calculados no backend.
 
+## Contrato da interface
+
+- O usuário inicia ou retoma a própria sessão; a interface nunca seleciona uma sessão por ID recebido do cliente.
+- A seleção pública contém somente `start_row`, `start_column`, `end_row` e `end_column`.
+- Trajetórias irregulares podem ser recusadas visualmente, mas toda coordenada recebida ainda é validada no backend.
+- O grid exibido é o snapshot persistido; alterações posteriores no catálogo não modificam a partida.
+- Termos são exibidos com `original_term`; `normalized_term` continua sendo a representação do grid.
+- O cronômetro visual pode avançar localmente, mas reload usa `started_at` e conclusão usa `duration_seconds` oficial.
+- Somente placements já encontrados podem gerar destaques permanentes no HTML; soluções pendentes não são expostas.
+
 ## Dificuldade dos termos
 
 - `easy`: termos curtos e comuns para iniciantes.

@@ -69,6 +69,18 @@ MySQL
 - O snapshot da palavra preserva os textos original e normalizado. A referência ao catálogo usa `nullOnDelete`, mantendo o histórico mesmo se o termo for removido.
 - Modelos são totalmente protegidos contra mass assignment e impedem alterações Eloquent em snapshots e estados finais.
 
+## Interface jogável
+
+- `GameBoard` é um componente Livewire class-based embutido na rota autenticada `/game`.
+- O componente sempre resolve a sessão pelo usuário autenticado; nenhum método público recebe `user_id` ou `game_session_id`.
+- Início, acerto e abandono delegam respectivamente para `StartGameSessionAction`, `FindGameSessionWordAction` e `AbandonGameSessionAction`.
+- A view recebe o grid persistido, termos originais, contadores e somente as células de palavras já encontradas. Placements pendentes permanecem no servidor.
+- `word-search-selection.js` usa Pointer Events para produzir trajetórias horizontais, verticais e diagonais, inclusive invertidas, e envia somente coordenadas no fim do gesto.
+- `game-clock.js` deriva o tempo visual do `started_at`; a duração final exibida vem do snapshot oficial do backend.
+- As actions públicas do componente usam limites por usuário + IP; o frontend bloqueia submissões sobrepostas, mas locks e idempotência continuam no domínio.
+- O layout Tailwind é mobile-first: grid fluido sem overflow horizontal, painel lateral em desktop e lista de termos abaixo no mobile/tablet.
+- JavaScript de seleção é coberto pelo runner nativo do Node; nenhuma dependência frontend adicional foi introduzida.
+
 ## Serviços-alvo
 
 - `WordSearchGeneratorService` — implementado na Etapa 4.

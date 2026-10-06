@@ -56,8 +56,9 @@ pnpm audit --audit-level=high
 - [Relatório da Etapa 3 — Catálogo de termos financeiros](docs/ai/07-RELATORIO-ETAPA-3.md)
 - [Relatório da Etapa 4 — Algoritmo de geração do caça-palavras](docs/ai/08-RELATORIO-ETAPA-4.md)
 - [Relatório da Etapa 5 — GameSession, snapshots e regras transacionais](docs/ai/09-RELATORIO-ETAPA-5.md)
+- [Relatório da Etapa 6 — Interface jogável desktop/mobile](docs/ai/10-RELATORIO-ETAPA-6.md)
 - [Guia de contribuição para IA](AGENTS.md)
 
 ## Estado atual
 
-Etapa 5 concluída: autenticação, catálogo administrativo, motor backend e domínio persistente/transacional de partidas estão implementados. A próxima etapa implementará a interface jogável desktop/mobile.
+Etapa 6 concluída: autenticação, catálogo, motor, domínio persistente e interface jogável Livewire para desktop/mobile estão implementados. A próxima etapa implementará pontuação e regras de recompensa.
