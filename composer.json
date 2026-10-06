@@ -2,8 +2,13 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "denarius/finance-game",
     "type": "project",
-    "description": "Jogo de educação financeira criativa da Denarius EdTech.",
-    "keywords": ["laravel", "livewire", "gamification", "financial-education"],
+    "description": "Jogo de educa\u00e7\u00e3o financeira criativa da Denarius EdTech.",
+    "keywords": [
+        "laravel",
+        "livewire",
+        "gamification",
+        "financial-education"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
@@ -53,7 +58,8 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

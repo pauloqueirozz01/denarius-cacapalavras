@@ -20,12 +20,20 @@ MySQL
 
 ## Módulos planejados
 
-- `Auth`: cadastro, login, logout e rate limiting.
+- `Auth`: controllers HTTP + Form Requests, sessão Laravel, logout seguro e rate limiting nativo.
 - `Terms`: `FinancialTerm`, normalização Unicode e catálogo ativo.
 - `Game`: `GameSession`, `GameSessionWord`, snapshot auditável e validação server-side.
 - `Scoring`: `ScoreCalculator` puro e transparente.
 - `Ranking`: consulta indexada por pontuação, tempo e conclusão; Livewire polling.
 - `Admin`: resources Filament protegidos por autorização explícita.
+
+## Autenticação e autorização
+
+- O guard `web` e a sessão nativa atendem a aplicação pública e o painel.
+- `UserRole` é um enum persistido como string; o `User` centraliza `isAdmin()` e `isParticipant()`.
+- `FilamentUser::canAccessPanel()` permite o painel `admin` somente para administradores.
+- Login limita falhas por e-mail normalizado + IP; cadastro limita requisições por IP.
+- O cadastro seleciona explicitamente campos seguros e nunca aceita `role` do request.
 
 ## Serviços-alvo
 

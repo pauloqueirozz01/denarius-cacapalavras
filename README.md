@@ -33,6 +33,10 @@ A aplicação fica em <http://localhost:8000> e o phpMyAdmin, exclusivo para des
 
 Credenciais locais padrão do banco: banco `denarius`, usuário `denarius` e senha `denarius`. Não reutilize essas credenciais fora do ambiente local.
 
+Para criar o administrador local, preencha `ADMIN_NAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` no `.env` antes de `php artisan db:seed`. A senha deve ter pelo menos 12 caracteres, letras maiúsculas e minúsculas, números e símbolos. Se a configuração estiver incompleta, nenhum administrador será criado.
+
+Em produção, use HTTPS e configure `SESSION_SECURE_COOKIE=true`; `SESSION_HTTP_ONLY=true` e `SESSION_SAME_SITE=lax` já são os padrões documentados. O ambiente HTTP local mantém o cookie seguro desabilitado.
+
 ## Verificação
 
 ```bash
@@ -53,4 +57,4 @@ pnpm audit --audit-level=high
 
 ## Estado atual
 
-Etapa 1 concluída: fundação Laravel e ambiente local validados. Autenticação, domínio do jogo, interface e painel administrativo serão implementados nas próximas etapas, com testes e commits separados.
+Etapa 2 concluída: autenticação por sessão, papéis, rota temporária do jogo e acesso protegido ao Filament estão implementados. A próxima etapa inicia o catálogo de termos financeiros.

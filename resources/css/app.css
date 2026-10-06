@@ -6,4 +6,22 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-denarius-50: #f7f3ff;
+    --color-denarius-100: #ede4ff;
+    --color-denarius-200: #ddcdff;
+    --color-denarius-300: #c5a6ff;
+    --color-denarius-400: #a875ff;
+    --color-denarius-500: #8d43f6;
+    --color-denarius-600: #7625da;
+    --color-denarius-700: #641db5;
+    --color-denarius-800: #521b92;
+    --color-denarius-900: #441979;
+    --color-denarius-950: #260941;
+}
+
+.denarius-grid {
+    background-image:
+        linear-gradient(rgb(255 255 255 / 4%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(255 255 255 / 4%) 1px, transparent 1px);
+    background-size: 32px 32px;
 }
