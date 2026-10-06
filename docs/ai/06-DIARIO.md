@@ -29,3 +29,17 @@
 - Policy explícita mantém todas as operações do catálogo restritas a administradores.
 - O catálogo permanece interno e não possui endpoint público nesta etapa.
 - Próximo passo: implementar o gerador determinístico do caça-palavras e seus testes de posicionamento.
+
+## 2026-10-06 — Etapa 4
+
+- Criado `WordSearchGeneratorService` para selecionar termos ativos e gerar grids configuráveis integralmente no backend.
+- Modeladas as oito direções em `WordDirection`, com deltas explícitos de linha e coluna.
+- Criados DTOs `readonly` para resultado, placements, coordenadas e snapshots dos termos selecionados.
+- O posicionamento tenta palavras maiores primeiro, prioriza cruzamentos compatíveis e valida toda a posição antes de gravar no grid.
+- A seleção, posições, direções e letras de preenchimento usam `Randomizer`; engines seeded tornam os testes reproduzíveis.
+- Configurações padrão e limites foram centralizados em `config/denarius.php`.
+- Exceções de domínio tratam catálogo insuficiente, entrada duplicada, configuração inválida, palavra incompatível e falha após tentativas limitadas.
+- Não houve alteração de banco, `GameSession`, interface, pontuação ou ranking.
+- Suíte completa: 95 testes, 930 assertions e nenhuma falha.
+- Pint, build e auditorias Composer/pnpm passaram; não há analisador estático configurado.
+- Próximo passo: implementar `GameSession`, snapshots e regras transacionais/antitrapaça.

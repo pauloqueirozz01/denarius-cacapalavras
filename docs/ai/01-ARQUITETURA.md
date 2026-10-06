@@ -45,9 +45,21 @@ MySQL
 - `FinancialTermSeeder` usa `firstOrCreate`: pode ser repetido sem duplicar nem sobrescrever edições administrativas.
 - Nenhuma rota ou API pública expõe o catálogo nesta etapa.
 
+## Motor do caça-palavras
+
+- `WordSearchGeneratorService::generate()` consulta termos ativos uma única vez e executa seleção e posicionamento em memória.
+- `generateFromTerms()` separa o posicionamento de uma coleção explícita da seleção normal do catálogo; esse caminho é usado para testes e integrações controladas.
+- `WordDirection` modela as oito direções com deltas explícitos de linha e coluna.
+- `WordSearchResult`, `WordPlacement`, `WordCoordinate` e `SelectedFinancialTerm` são contratos `readonly` preparados para o snapshot da futura `GameSession`.
+- O algoritmo randomiza seleção, coordenadas, direções e preenchimento; `Randomizer` pode ser injetado com uma engine seeded para testes reproduzíveis.
+- As palavras são tentadas da maior para a menor. Entre candidatos compatíveis, o algoritmo prioriza o maior número de cruzamentos e escolhe aleatoriamente entre empates.
+- Cada candidato é validado integralmente antes de alterar o grid. Letras iguais podem cruzar; letras diferentes bloqueiam a posição.
+- Falhas são explícitas para configuração inválida, catálogo insuficiente, duplicidade normalizada, palavra incompatível e esgotamento das tentativas.
+- O grid padrão é `15x15`, com 10 palavras e até 20 reinicializações, configurados em `config/denarius.php`.
+
 ## Serviços-alvo
 
-- `WordSearchGeneratorService`
+- `WordSearchGeneratorService` — implementado na Etapa 4.
 - `StartGameService`
 - `ValidateWordSelectionService`
 - `ScoreCalculator`

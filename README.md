@@ -54,8 +54,9 @@ pnpm audit --audit-level=high
 - [Domínio](docs/ai/02-DOMINIO.md)
 - [Backlog](docs/ai/03-TASKS.md)
 - [Relatório da Etapa 3 — Catálogo de termos financeiros](docs/ai/07-RELATORIO-ETAPA-3.md)
+- [Relatório da Etapa 4 — Algoritmo de geração do caça-palavras](docs/ai/08-RELATORIO-ETAPA-4.md)
 - [Guia de contribuição para IA](AGENTS.md)
 
 ## Estado atual
 
-Etapa 3 concluída: autenticação, autorização e catálogo administrativo com 90 termos financeiros estão implementados. A próxima etapa implementará o gerador do caça-palavras.
+Etapa 4 concluída: autenticação, catálogo administrativo e motor backend do caça-palavras estão implementados. A próxima etapa implementará sessões e regras de partida.
