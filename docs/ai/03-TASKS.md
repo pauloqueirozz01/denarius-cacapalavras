@@ -8,11 +8,12 @@
 - [x] Criar memória, arquitetura e guias de engenharia.
 - [x] Validar migrations em MySQL, testes, Pint, build e auditorias.
 - [x] Implementar autenticação de sessão, papéis, seeder administrativo e proteção Filament.
+- [x] Implementar catálogo de 90 termos, normalização, dificuldades e Resource Filament.
 
 ## Próximas etapas
 
 - [x] Etapa 2: autenticação, papel de administrador, migrations e testes.
-- [ ] Etapa 3: `FinancialTerm`, factory, seeder com 50–100 termos e Filament posterior.
+- [x] Etapa 3: `FinancialTerm`, factory, seeder com 50–100 termos e administração Filament.
 - [ ] Etapa 4: gerador determinístico, oito direções e testes de borda/colisão.
 - [ ] Etapa 5: sessões, snapshots, actions transacionais e antitrapaça.
 - [ ] Etapa 6: interface Livewire responsiva com mouse/touch/teclado.

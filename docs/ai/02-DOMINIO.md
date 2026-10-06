@@ -3,7 +3,7 @@
 ## Entidades
 
 - `User`: participante ou administrador, com papel representado por `UserRole`.
-- `FinancialTerm`: termo exibido, versão normalizada, descrição, dificuldade e estado ativo.
+- `FinancialTerm`: termo exibido, versão normalizada, descrição educativa, dificuldade e estado ativo.
 - `GameSession`: tentativa de um participante, grid imutável, estado, tempos e totais derivados.
 - `GameSessionWord`: palavra sorteada com posicionamento e eventual acerto.
 
@@ -13,6 +13,9 @@
 - Somente `admin` pode acessar o painel Filament; e-mail não concede privilégio.
 - Papel não é mass-assignable e não pode ser escolhido no cadastro.
 - Senhas usam o cast `hashed` do Laravel e não são serializadas.
+- A forma normalizada de um termo é automática, contém somente `A-Z`, possui no máximo 24 letras e é única.
+- Termos equivalentes após remoção de acentos, espaços e símbolos não podem coexistir.
+- Somente administradores gerenciam o catálogo; participantes não recebem uma listagem pública.
 - Uma sessão pertence ao usuário autenticado.
 - Uma seleção só é válida se corresponder exatamente a uma palavra ainda não encontrada da sessão.
 - O cliente nunca define pontuação, status, duração ou contadores.
@@ -23,3 +26,9 @@
 ## Estados planejados
 
 `active -> completed` ou `active -> abandoned`; estados finais não recebem novos acertos.
+
+## Dificuldade dos termos
+
+- `easy`: termos curtos e comuns para iniciantes.
+- `medium`: conceitos intermediários ou palavras mais longas.
+- `hard`: conceitos técnicos ou menos familiares.

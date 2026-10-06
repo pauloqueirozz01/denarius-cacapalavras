@@ -57,4 +57,4 @@ pnpm audit --audit-level=high
 
 ## Estado atual
 
-Etapa 2 concluída: autenticação por sessão, papéis, rota temporária do jogo e acesso protegido ao Filament estão implementados. A próxima etapa inicia o catálogo de termos financeiros.
+Etapa 3 concluída: autenticação, autorização e catálogo administrativo com 90 termos financeiros estão implementados. A próxima etapa implementará o gerador do caça-palavras.
