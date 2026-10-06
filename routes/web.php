@@ -21,7 +21,7 @@ Route::middleware('guest')->group(function (): void {
 Route::middleware('auth')->group(function (): void {
     Route::get('/game', function () {
         return view('game');
-    })->name('game');
+    })->middleware('throttle:120,1')->name('game');
 
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });

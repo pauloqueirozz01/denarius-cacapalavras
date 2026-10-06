@@ -28,4 +28,17 @@ return [
         'maximum_word_count' => 30,
         'alphabet' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     ],
+
+    'game_interface' => [
+        'decay_seconds' => 60,
+        'start' => [
+            'max_attempts' => 5,
+        ],
+        'selection' => [
+            'max_attempts' => 120,
+        ],
+        'abandon' => [
+            'max_attempts' => 5,
+        ],
+    ],
 ];

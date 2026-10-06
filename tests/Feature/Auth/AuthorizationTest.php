@@ -23,7 +23,9 @@ class AuthorizationTest extends TestCase
 
         $response = $this->actingAs($participant)->get(route('game'));
 
-        $response->assertSee('Seu desafio está quase pronto.');
+        $response
+            ->assertSee('Seu desafio começa agora.')
+            ->assertSee('Iniciar partida');
     }
 
     public function test_game_escapes_participant_name(): void
