@@ -9,14 +9,17 @@
 - [x] Validar migrations em MySQL, testes, Pint, build e auditorias.
 - [x] Implementar autenticação de sessão, papéis, seeder administrativo e proteção Filament.
 - [x] Implementar catálogo de 90 termos, normalização, dificuldades e Resource Filament.
+- [x] Implementar motor configurável do caça-palavras, oito direções, randomização controlável e contratos de resultado.
+- [x] Implementar sessões persistentes, snapshots auditáveis, máquina de estados, actions transacionais e antitrapaça básica.
+- [x] Implementar interface Livewire responsiva com Pointer Events, retomada, tutorial e estados completos da partida.
 
 ## Próximas etapas
 
 - [x] Etapa 2: autenticação, papel de administrador, migrations e testes.
 - [x] Etapa 3: `FinancialTerm`, factory, seeder com 50–100 termos e administração Filament.
-- [ ] Etapa 4: gerador determinístico, oito direções e testes de borda/colisão.
-- [ ] Etapa 5: sessões, snapshots, actions transacionais e antitrapaça.
-- [ ] Etapa 6: interface Livewire responsiva com mouse/touch/teclado.
+- [x] Etapa 4: gerador determinístico, oito direções e testes de borda/colisão.
+- [x] Etapa 5: sessões, snapshots, actions transacionais e antitrapaça.
+- [x] Etapa 6: interface Livewire responsiva com mouse/touch e base acessível.
 - [ ] Etapa 7: pontuação centralizada e transparente.
 - [ ] Etapa 8: ranking indexado com `wire:poll`.
 - [ ] Etapa 9: componente de mascote com assets substituíveis.

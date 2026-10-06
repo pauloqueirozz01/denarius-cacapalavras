@@ -17,6 +17,9 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - MySQL 8.4 e phpMyAdmin 5.2 definidos em Docker Compose.
 - Autenticação de sessão, papéis `admin`/`participant`, rota protegida `/game` e acesso administrativo Filament estão implementados.
 - Catálogo com 90 termos financeiros educativos, dificuldades, ativação e gestão administrativa Filament está implementado.
+- Motor backend do caça-palavras implementado com grid configurável, seleção de termos ativos, oito direções e geração determinística em testes.
+- Domínio persistente de partidas implementado com snapshots do grid e das palavras, estados explícitos, actions transacionais, autorização por proprietário e validação server-side das seleções.
+- Interface jogável Livewire implementada em `/game`, com início/retomada, grid persistido, Pointer Events para mouse/toque, progresso, cronômetro visual, tutorial, conclusão e abandono.
 
 ## Decisões
 
@@ -26,4 +29,9 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - `pnpm` é o gerenciador JavaScript do projeto.
 - Cadastro público sempre cria `participant`; somente o seeder configurado por ambiente cria `admin`.
 - Verificação de e-mail e recuperação de senha ficam desabilitadas no MVP para reduzir atrito em eventos.
-- O catálogo não possui endpoint público; o jogo consumirá somente termos ativos em uma etapa posterior.
+- O catálogo não possui endpoint público; o gerador consulta termos ativos diretamente no backend.
+- O resultado do motor é validado e persistido uma única vez por `StartGameSessionAction`; partidas em andamento nunca regeneram o grid.
+- Cada usuário pode manter no máximo uma partida ativa. A regra é revalidada dentro da transação após bloquear a linha do usuário.
+- O cliente informa somente coordenadas. Status, acertos, contadores, timestamps e duração permanecem sob autoridade do servidor.
+- Placements pendentes não são enviados ao navegador. Somente o grid, termos visíveis, progresso e células de palavras já encontradas compõem a interface.
+- O JavaScript calcula apenas a trajetória visual do gesto e o cronômetro de exibição; o backend continua validando seleção e duração oficial.

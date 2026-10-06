@@ -29,3 +29,47 @@
 - Policy explícita mantém todas as operações do catálogo restritas a administradores.
 - O catálogo permanece interno e não possui endpoint público nesta etapa.
 - Próximo passo: implementar o gerador determinístico do caça-palavras e seus testes de posicionamento.
+
+## 2026-10-06 — Etapa 4
+
+- Criado `WordSearchGeneratorService` para selecionar termos ativos e gerar grids configuráveis integralmente no backend.
+- Modeladas as oito direções em `WordDirection`, com deltas explícitos de linha e coluna.
+- Criados DTOs `readonly` para resultado, placements, coordenadas e snapshots dos termos selecionados.
+- O posicionamento tenta palavras maiores primeiro, prioriza cruzamentos compatíveis e valida toda a posição antes de gravar no grid.
+- A seleção, posições, direções e letras de preenchimento usam `Randomizer`; engines seeded tornam os testes reproduzíveis.
+- Configurações padrão e limites foram centralizados em `config/denarius.php`.
+- Exceções de domínio tratam catálogo insuficiente, entrada duplicada, configuração inválida, palavra incompatível e falha após tentativas limitadas.
+- Não houve alteração de banco, `GameSession`, interface, pontuação ou ranking.
+- Suíte completa: 95 testes, 930 assertions e nenhuma falha.
+- Pint, build e auditorias Composer/pnpm passaram; não há analisador estático configurado.
+- Próximo passo: implementar `GameSession`, snapshots e regras transacionais/antitrapaça.
+
+## 2026-10-06 — Etapa 5
+
+- Criados `GameSession` e `GameSessionWord`, com grid/configuração JSON, snapshots dos termos e placements, casts explícitos, índices e chaves estrangeiras.
+- `GameSessionStatus` centraliza `ACTIVE`, `COMPLETED` e `ABANDONED`; somente partidas ativas podem concluir ou abandonar.
+- `StartGameSessionAction` valida o resultado do gerador e persiste sessão e palavras em uma transação, após bloquear o usuário e revalidar a regra de uma partida ativa.
+- `FindGameSessionWordAction` aceita coordenadas nos dois sentidos, bloqueia sessão/palavra, mantém idempotência, recalcula o contador autoritativo e conclui automaticamente a última palavra.
+- `AbandonGameSessionAction` registra término e duração no servidor sem permitir transições de estados finais.
+- Snapshots e estados finais são imutáveis pelos modelos; campos sensíveis são totalmente protegidos contra mass assignment.
+- `GameSessionPolicy` restringe consulta, acerto e abandono ao proprietário. Nenhuma rota pública nova foi criada.
+- Exclusão futura de `FinancialTerm` preserva o snapshot e apenas torna sua referência nula.
+- Migrations aplicadas com sucesso no MySQL 8.4.
+- Suíte completa: 138 testes, 1.062 assertions e nenhuma falha; 43 casos foram adicionados nesta etapa.
+- Pint, build e auditorias Composer/pnpm passaram; não há analisador estático configurado.
+- Próximo passo: implementar a interface jogável desktop/mobile em Livewire, consumindo as actions sem duplicar regras no frontend.
+
+## 2026-10-06 — Etapa 6
+
+- A rota autenticada `/game` passou a renderizar `GameBoard`, componente Livewire que inicia, retoma, atualiza e abandona a sessão do próprio usuário.
+- O grid consumido é o snapshot persistido; a lista usa termos originais e nenhum placement pendente é enviado ao HTML.
+- Pointer Events unificam mouse, caneta e toque. JavaScript calcula somente trajetórias visuais retas e envia as quatro coordenadas ao backend.
+- Palavras encontradas ficam destacadas, progresso é autoritativo e conclusão/abandono bloqueiam novas seleções.
+- O cronômetro visual deriva de `started_at`, sobrevive a reload e é substituído pela duração oficial ao encerrar.
+- Foram adicionados tutorial em dialog nativo, confirmação de abandono, feedback `aria-live`, foco visível e mensagens além de cor.
+- Rate limits por usuário + IP protegem início, seleções e abandono; payloads não aceitam sessão, termo, score ou estado.
+- Layout mobile-first mantém o tabuleiro fluido e move os painéis de progresso/termos para baixo do grid antes do breakpoint desktop.
+- Adicionados 14 testes PHPUnit e 5 testes JavaScript; suíte final: 152 testes PHP, 1.127 assertions e 5 testes JS, sem falhas.
+- Pint, Composer validate, Vite build e auditorias Composer/pnpm passaram.
+- A validação visual automatizada não pôde ser executada porque a conexão do navegador disponibilizado pelo ambiente foi recusada; a pendência foi documentada sem alegação de screenshots.
+- Próximo passo: implementar pontuação e regras de recompensa no backend.

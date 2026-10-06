@@ -7,6 +7,7 @@
 
         <title>@yield('title', config('app.name'))</title>
 
+        @livewireStyles
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen bg-denarius-950 font-sans text-white antialiased">
@@ -52,5 +53,7 @@
         <main class="relative z-10">
             @yield('content')
         </main>
+
+        @livewireScripts
     </body>
 </html>

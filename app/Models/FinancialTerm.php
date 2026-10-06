@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['term', 'description', 'difficulty', 'is_active'])]
 #[ObservedBy([FinancialTermObserver::class])]
@@ -37,6 +38,11 @@ class FinancialTerm extends Model
     protected function byDifficulty(Builder $query, FinancialTermDifficulty $difficulty): Builder
     {
         return $query->where('difficulty', $difficulty->value);
+    }
+
+    public function gameSessionWords(): HasMany
+    {
+        return $this->hasMany(GameSessionWord::class);
     }
 
     /**

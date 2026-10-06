@@ -54,8 +54,11 @@ pnpm audit --audit-level=high
 - [Domínio](docs/ai/02-DOMINIO.md)
 - [Backlog](docs/ai/03-TASKS.md)
 - [Relatório da Etapa 3 — Catálogo de termos financeiros](docs/ai/07-RELATORIO-ETAPA-3.md)
+- [Relatório da Etapa 4 — Algoritmo de geração do caça-palavras](docs/ai/08-RELATORIO-ETAPA-4.md)
+- [Relatório da Etapa 5 — GameSession, snapshots e regras transacionais](docs/ai/09-RELATORIO-ETAPA-5.md)
+- [Relatório da Etapa 6 — Interface jogável desktop/mobile](docs/ai/10-RELATORIO-ETAPA-6.md)
 - [Guia de contribuição para IA](AGENTS.md)
 
 ## Estado atual
 
-Etapa 3 concluída: autenticação, autorização e catálogo administrativo com 90 termos financeiros estão implementados. A próxima etapa implementará o gerador do caça-palavras.
+Etapa 6 concluída: autenticação, catálogo, motor, domínio persistente e interface jogável Livewire para desktop/mobile estão implementados. A próxima etapa implementará pontuação e regras de recompensa.
