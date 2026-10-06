@@ -15,7 +15,8 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - Livewire 4.4.7 e Filament 5.9.0 instalados como dependências de fundação.
 - Laravel Boost 2.10.2 instalado para guidelines, skills e MCP de desenvolvimento.
 - MySQL 8.4 e phpMyAdmin 5.2 definidos em Docker Compose.
-- Nenhuma funcionalidade de domínio foi iniciada.
+- Autenticação de sessão, papéis `admin`/`participant`, rota protegida `/game` e acesso administrativo Filament estão implementados.
+- Catálogo com 90 termos financeiros educativos, dificuldades, ativação e gestão administrativa Filament está implementado.
 
 ## Decisões
 
@@ -23,3 +24,6 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - Livewire/Blade para o jogo e Filament apenas em `/admin`.
 - MySQL é a persistência da aplicação; SQLite em memória pode ser usado por testes unitários/feature.
 - `pnpm` é o gerenciador JavaScript do projeto.
+- Cadastro público sempre cria `participant`; somente o seeder configurado por ambiente cria `admin`.
+- Verificação de e-mail e recuperação de senha ficam desabilitadas no MVP para reduzir atrito em eventos.
+- O catálogo não possui endpoint público; o jogo consumirá somente termos ativos em uma etapa posterior.
