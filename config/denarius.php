@@ -17,4 +17,15 @@ return [
             'decay_minutes' => (int) env('AUTH_REGISTER_DECAY_MINUTES', 1),
         ],
     ],
+
+    'word_search' => [
+        'rows' => 15,
+        'columns' => 15,
+        'word_count' => 10,
+        'generation_attempts' => 20,
+        'minimum_dimension' => 2,
+        'maximum_dimension' => 50,
+        'maximum_word_count' => 30,
+        'alphabet' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    ],
 ];
