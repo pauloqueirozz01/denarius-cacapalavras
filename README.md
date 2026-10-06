@@ -53,6 +53,7 @@ pnpm audit --audit-level=high
 - [Arquitetura](docs/ai/01-ARQUITETURA.md)
 - [Domínio](docs/ai/02-DOMINIO.md)
 - [Backlog](docs/ai/03-TASKS.md)
+- [Relatório da Etapa 3 — Catálogo de termos financeiros](docs/ai/07-RELATORIO-ETAPA-3.md)
 - [Guia de contribuição para IA](AGENTS.md)
 
 ## Estado atual
