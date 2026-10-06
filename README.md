@@ -55,8 +55,9 @@ pnpm audit --audit-level=high
 - [Backlog](docs/ai/03-TASKS.md)
 - [Relatório da Etapa 3 — Catálogo de termos financeiros](docs/ai/07-RELATORIO-ETAPA-3.md)
 - [Relatório da Etapa 4 — Algoritmo de geração do caça-palavras](docs/ai/08-RELATORIO-ETAPA-4.md)
+- [Relatório da Etapa 5 — GameSession, snapshots e regras transacionais](docs/ai/09-RELATORIO-ETAPA-5.md)
 - [Guia de contribuição para IA](AGENTS.md)
 
 ## Estado atual
 
-Etapa 4 concluída: autenticação, catálogo administrativo e motor backend do caça-palavras estão implementados. A próxima etapa implementará sessões e regras de partida.
+Etapa 5 concluída: autenticação, catálogo administrativo, motor backend e domínio persistente/transacional de partidas estão implementados. A próxima etapa implementará a interface jogável desktop/mobile.

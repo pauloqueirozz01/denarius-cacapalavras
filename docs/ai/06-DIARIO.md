@@ -43,3 +43,18 @@
 - Suíte completa: 95 testes, 930 assertions e nenhuma falha.
 - Pint, build e auditorias Composer/pnpm passaram; não há analisador estático configurado.
 - Próximo passo: implementar `GameSession`, snapshots e regras transacionais/antitrapaça.
+
+## 2026-10-06 — Etapa 5
+
+- Criados `GameSession` e `GameSessionWord`, com grid/configuração JSON, snapshots dos termos e placements, casts explícitos, índices e chaves estrangeiras.
+- `GameSessionStatus` centraliza `ACTIVE`, `COMPLETED` e `ABANDONED`; somente partidas ativas podem concluir ou abandonar.
+- `StartGameSessionAction` valida o resultado do gerador e persiste sessão e palavras em uma transação, após bloquear o usuário e revalidar a regra de uma partida ativa.
+- `FindGameSessionWordAction` aceita coordenadas nos dois sentidos, bloqueia sessão/palavra, mantém idempotência, recalcula o contador autoritativo e conclui automaticamente a última palavra.
+- `AbandonGameSessionAction` registra término e duração no servidor sem permitir transições de estados finais.
+- Snapshots e estados finais são imutáveis pelos modelos; campos sensíveis são totalmente protegidos contra mass assignment.
+- `GameSessionPolicy` restringe consulta, acerto e abandono ao proprietário. Nenhuma rota pública nova foi criada.
+- Exclusão futura de `FinancialTerm` preserva o snapshot e apenas torna sua referência nula.
+- Migrations aplicadas com sucesso no MySQL 8.4.
+- Suíte completa: 138 testes, 1.062 assertions e nenhuma falha; 43 casos foram adicionados nesta etapa.
+- Pint, build e auditorias Composer/pnpm passaram; não há analisador estático configurado.
+- Próximo passo: implementar a interface jogável desktop/mobile em Livewire, consumindo as actions sem duplicar regras no frontend.

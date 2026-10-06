@@ -57,21 +57,33 @@ MySQL
 - Falhas são explícitas para configuração inválida, catálogo insuficiente, duplicidade normalizada, palavra incompatível e esgotamento das tentativas.
 - O grid padrão é `15x15`, com 10 palavras e até 20 reinicializações, configurados em `config/denarius.php`.
 
+## Partidas persistentes
+
+- `StartGameSessionAction` autoriza o usuário, gera e valida o `WordSearchResult` e persiste `GameSession` + `GameSessionWord` atomicamente.
+- A criação bloqueia a linha do usuário e reconsulta partidas ativas dentro da transação, serializando tentativas concorrentes para a regra de uma partida ativa por usuário.
+- `GameSessionSnapshotValidator` verifica dimensões, alfabeto, coordenadas, direção, correspondência entre termos e placements e reconstrução de cada palavra antes da persistência.
+- `FindGameSessionWordAction` recebe somente coordenadas, aceita o placement nos dois sentidos e bloqueia sessão e palavra antes de alterar o estado.
+- Acertos repetidos são idempotentes. O contador é recalculado a partir das palavras encontradas e a última palavra conclui a partida na mesma transação.
+- `AbandonGameSessionAction` realiza somente a transição `ACTIVE -> ABANDONED`, com horário e duração definidos pelo servidor.
+- `GameSessionPolicy` restringe leitura e mutações ao proprietário. Ainda não existem endpoints públicos para essas actions.
+- O snapshot da palavra preserva os textos original e normalizado. A referência ao catálogo usa `nullOnDelete`, mantendo o histórico mesmo se o termo for removido.
+- Modelos são totalmente protegidos contra mass assignment e impedem alterações Eloquent em snapshots e estados finais.
+
 ## Serviços-alvo
 
 - `WordSearchGeneratorService` — implementado na Etapa 4.
-- `StartGameService`
-- `ValidateWordSelectionService`
+- `StartGameSessionAction` — implementado na Etapa 5.
+- `FindGameSessionWordAction` — implementado na Etapa 5.
+- `AbandonGameSessionAction` — implementado na Etapa 5.
 - `ScoreCalculator`
-- `CompleteGameService`
 - `RankingService`
 
 O frontend envia somente coordenadas da seleção. Palavras, relógio, conclusão e pontos permanecem sob autoridade do servidor.
 
-## Modelo de dados planejado
+## Modelo de dados
 
 ```text
 User 1---* GameSession 1---* GameSessionWord *---1 FinancialTerm
 ```
 
-`GameSession.grid` será JSON; cada palavra da sessão guardará termo, forma normalizada, coordenadas, direção e momento do acerto. Essa combinação preserva o snapshot e permite auditoria.
+`GameSession.grid` e `generation_config` são JSON. Cada palavra guarda a referência opcional ao catálogo, termo original e normalizado, coordenadas, direção e momento do acerto. Essa combinação preserva o snapshot e permite auditoria sem serializar DTOs PHP.

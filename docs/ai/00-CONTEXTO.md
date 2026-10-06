@@ -18,6 +18,7 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - Autenticação de sessão, papéis `admin`/`participant`, rota protegida `/game` e acesso administrativo Filament estão implementados.
 - Catálogo com 90 termos financeiros educativos, dificuldades, ativação e gestão administrativa Filament está implementado.
 - Motor backend do caça-palavras implementado com grid configurável, seleção de termos ativos, oito direções e geração determinística em testes.
+- Domínio persistente de partidas implementado com snapshots do grid e das palavras, estados explícitos, actions transacionais, autorização por proprietário e validação server-side das seleções.
 
 ## Decisões
 
@@ -28,4 +29,6 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - Cadastro público sempre cria `participant`; somente o seeder configurado por ambiente cria `admin`.
 - Verificação de e-mail e recuperação de senha ficam desabilitadas no MVP para reduzir atrito em eventos.
 - O catálogo não possui endpoint público; o gerador consulta termos ativos diretamente no backend.
-- O motor retorna um snapshot em memória com grid, termos selecionados e posições; sua persistência pertence à Etapa 5.
+- O resultado do motor é validado e persistido uma única vez por `StartGameSessionAction`; partidas em andamento nunca regeneram o grid.
+- Cada usuário pode manter no máximo uma partida ativa. A regra é revalidada dentro da transação após bloquear a linha do usuário.
+- O cliente informa somente coordenadas. Status, acertos, contadores, timestamps e duração permanecem sob autoridade do servidor.
