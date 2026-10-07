@@ -169,6 +169,31 @@ class RankingServiceTest extends TestCase
         $this->assertNull(app(RankingService::class)->positionForCompletedSession(999999));
     }
 
+    public function test_uses_session_id_as_the_final_global_tiebreaker(): void
+    {
+        $higherIdUser = User::factory()->participant()->create();
+        $lowerIdUser = User::factory()->participant()->create();
+        $tie = [
+            'score' => 1000,
+            'duration_seconds' => 60,
+            'finished_at' => '2026-10-01 12:00:00',
+        ];
+
+        $higherIdSession = $this->completedSession($higherIdUser, $tie + ['id' => 9001]);
+        $lowerIdSession = $this->completedSession($lowerIdUser, $tie + ['id' => 9000]);
+
+        $entries = app(RankingService::class)->paginate()->items();
+
+        $this->assertSame([$lowerIdSession->id, $higherIdSession->id], array_map(
+            static fn (LeaderboardEntry $entry): int => $entry->sessionId,
+            $entries,
+        ));
+        $this->assertSame([1, 2], array_map(
+            static fn (LeaderboardEntry $entry): int => $entry->position,
+            $entries,
+        ));
+    }
+
     public function test_newly_completed_results_appear_on_the_next_read_without_cached_ranking_state(): void
     {
         $service = app(RankingService::class);
