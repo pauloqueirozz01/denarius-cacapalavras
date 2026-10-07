@@ -23,6 +23,7 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - Pontuação autoritativa implementada com pontos por palavra, bônus de conclusão/velocidade, snapshot da fórmula por partida e exibição persistida na interface.
 - Ranking autenticado implementado com melhor partida concluída por participante, posição individual, atualização Livewire periódica e retorno ao jogo após a conclusão.
 - Experiência visual refinada na Etapa 9 com componente reutilizável de mascote, estados visuais, tutorial com regras históricas da partida, microanimações e suporte a movimento reduzido.
+- Etapa 10 em estabilização/pré-deploy: recursos Filament somente leitura para usuários e partidas, cabeçalhos HTTP básicos de segurança, proteção do catálogo contra exclusão operacional e documentação de readiness cPanel.
 
 ## Decisões
 
@@ -42,4 +43,7 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - O ranking considera apenas participantes e partidas `COMPLETED`; cada jogador aparece uma vez pela sua melhor partida e o score é lido diretamente do banco.
 - A classificação em `/ranking` atualiza sua própria área a cada 5 segundos por `wire:poll`; o resultado da partida mostra score, duração, breakdown histórico e melhor posição quando disponível.
 - `x-mascot` seleciona assets por estado (`idle.webp`, `correct.webp`, `error.webp`, `celebration.webp`, `victory.webp`, `abandoned.webp`) e usa um SVG provisório original como fallback; a arte final pode substituir os arquivos sem refatorar as views.
-- Roadmap consolidado do MVP: Etapa 9 concluída; Etapa 10 (Filament final, QA e segurança) e Etapa 11 (deploy e documentação final) seguem no backlog.
+- O painel Filament administra termos (sem exclusão; desativação preserva o catálogo) e oferece consulta somente leitura a usuários e partidas. Apenas administradores acessam o painel; papéis, score, snapshots e sessões não são editáveis pelo backoffice.
+- Respostas HTTP incluem `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` e `Permissions-Policy`. HSTS e CSP ficam pendentes de validação no host/HTTPS e de testes de compatibilidade Livewire.
+- No ambiente local validado, PHP CLI 8.5.11, Composer 2.10.3, MySQL 8.4.11 e `utf8mb4`; estes dados não comprovam o ambiente cPanel. O domínio, PHP Web/CLI, privilégios remotos, SSL e Document Root ainda precisam de confirmação do provedor.
+- Roadmap consolidado do MVP: Etapas 9 e 10 concluídas no código/documentação; readiness cPanel está `BLOCKED` por dados de hospedagem não confirmados. Etapa 11 (deploy, smoke tests e documentação final) permanece pendente e depende da liberação dos bloqueios e autorização.

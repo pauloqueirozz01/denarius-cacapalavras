@@ -116,3 +116,18 @@
 - Pint, Composer validate, Vite build, audits Composer/pnpm e `git diff --check` aprovados.
 - A inspeção visual foi tentada com o navegador integrado, mas a conexão foi recusada (`privileged native pipe bridge is not available; browser-client is not trusted`); sem screenshots ou teste físico alegados.
 - Próximo passo: Etapa 10 — Filament final, QA, auditoria de segurança e correções.
+
+## 2026-10-06 — Etapa 10
+
+- Confirmada a base completa da Etapa 9 em `feat/mascot-visual-polish`; worktree inicial limpo e branch própria `chore/pre-deploy-hardening` criada.
+- Ampliado o Filament com consulta somente leitura de usuários (busca, papel, cadastro, quantidade de partidas e melhor score concluído) e partidas (status, score, progresso, duração e datas), com acesso apenas admin e sem exposição de grid/placements.
+- Removidas ações de exclusão de termos e bloqueadas as abilities `delete`/`deleteAny`; desativação continua sendo a forma de retirar termos do gerador, preservando a trilha do catálogo.
+- Adicionados cabeçalhos HTTP `nosniff`, `DENY`, `strict-origin-when-cross-origin` e `Permissions-Policy` sem CSP/HSTS prematuros. Teste de segurança valida os cabeçalhos.
+- `.env.example` marcado como referência local, `QUEUE_CONNECTION=sync` por ausência de jobs ativos, e porta MySQL do Compose passou a escutar somente em loopback.
+- QA inicial: baseline 187 testes/1.280 assertions; suíte final 197/1.325, JS 5; Pint, Composer validate/platform, build, Composer/pnpm audit aprovados.
+- PHP CLI local 8.5.11 e extensões exigidas foram verificadas; migrations locais estão aplicadas. MySQL local: 8.4.11, `utf8mb4` e collation `utf8mb4_0900_ai_ci`; `EXPLAIN` da janela de ranking escolhe índice por status e utiliza filesort/tabela temporária.
+- Não houve migration nova. Seeder de termos continua idempotente; seeder admin valida senha forte e não sobrescreve conta. Nenhum upload, job ou cron necessário foi identificado; `storage:link` não é usado pelos assets atuais.
+- A conexão do browser integrado foi recusada (`privileged native pipe bridge is not available; browser-client is not trusted`); checklist manual de 360, 390, 430, 768, 1024 e 1440 px foi incluído no relatório.
+- Sem acesso ao cPanel, valores de PHP Web/CLI, domínio, Document Root, SSL, symlink, database/user/grants, charset e permissões permanecem pendentes. `docs/deploy/CPANEL-READINESS.md` classifica readiness como `BLOCKED`; `CPANEL-DEPLOY.md` prepara fluxo, backup, migrations, seeders e rollback, sem executar operações remotas.
+- Commit funcional criado: `a7caa15 chore: harden application for production deployment`; commit documental e push da branch serão concluídos após revisão final.
+- Próxima etapa: Etapa 11 — publicação no cPanel após resolver bloqueios e obter autorização explícita, seguida de smoke tests e documentação final.

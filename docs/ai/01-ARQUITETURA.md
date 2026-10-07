@@ -26,6 +26,7 @@ MySQL
 - `Scoring`: `ScoreCalculator` puro e transparente.
 - `Ranking`: consulta indexada por pontuação, tempo e conclusão; Livewire polling.
 - `Admin`: resources Filament protegidos por autorização explícita.
+- `Production readiness`: perfil de configuração produtivo descrito em `docs/deploy/`; não há deploy, DNS ou alteração de banco remoto executados na Etapa 10.
 
 ## Autenticação e autorização
 
@@ -34,6 +35,9 @@ MySQL
 - `FilamentUser::canAccessPanel()` permite o painel `admin` somente para administradores.
 - Login limita falhas por e-mail normalizado + IP; cadastro limita requisições por IP.
 - O cadastro seleciona explicitamente campos seguros e nunca aceita `role` do request.
+- `UserResource` e `GameSessionResource` são somente leitura: não permitem criar/editar/excluir usuários ou partidas. Usuários podem ser pesquisados por nome/e-mail e mostram perfil, quantidade de partidas e maior score concluído; partidas exibem apenas dados operacionais, sem grid ou placements.
+- `FinancialTermResource` permite cadastrar, editar, ativar e desativar termos; exclusão individual/em lote foi removida para evitar perda desnecessária da rastreabilidade do catálogo.
+- `AddSecurityHeaders` aplica cabeçalhos básicos globalmente. HSTS depende de confirmar HTTPS no host; CSP não foi aplicada porque precisa de teste específico das diretivas necessárias a Livewire/Filament/Vite.
 
 ## Catálogo de termos
 
@@ -103,6 +107,12 @@ MySQL
 - `GameBoard` calcula o breakdown final apenas a partir do snapshot de pontuação da sessão e compara o resultado com o score persistido antes de exibi-lo. A posição mostrada é sempre a melhor posição concluída do participante.
 - Não foi mantido índice adicional: no `EXPLAIN FORMAT=JSON` do MySQL local, o plano preferiu o índice existente por status e término; a janela usa ordenação temporária e será reavaliada com volume de evento representativo.
 - Partidas anteriores permanecem imutáveis ao iniciar outra. O fluxo de start já serializa requests simultâneas e retoma sessão ativa existente.
+
+## Preparação cPanel
+
+- O banco local foi confirmado como MySQL 8.4.11, `utf8mb4`/`utf8mb4_0900_ai_ci`; o `EXPLAIN FORMAT=JSON` da janela do ranking usou o índice existente de status e mostrou filesort/tabela temporária. Sem volume representativo, nenhum índice novo foi adicionado.
+- PHP CLI e extensões foram medidos somente na máquina de desenvolvimento. Compatibilidade do PHP Web/CLI, Document Root terminado em `/public`, SSL, permissões, symlinks, MySQL remoto e privilégios de conta cPanel permanecem condicionantes até verificação no provedor.
+- Em produção, gerar artefato frontend local (`public/build`), manter `.env` e `storage` fora do Document Root e executar migrations com `--force`. A decisão de Composer no host e o formato final do pacote devem ser confirmados contra a versão PHP efetiva do cPanel.
 
 ## Apresentação e mascote
 

@@ -16,6 +16,8 @@
 - A forma normalizada de um termo é automática, contém somente `A-Z`, possui no máximo 24 letras e é única.
 - Termos equivalentes após remoção de acentos, espaços e símbolos não podem coexistir.
 - Somente administradores gerenciam o catálogo; participantes não recebem uma listagem pública.
+- A operação administrativa do catálogo não exclui termos: desativar remove o termo de sorteios futuros sem apagar sua rastreabilidade; snapshots antigos continuam autossuficientes.
+- Recursos de usuários e partidas no Filament são apenas para consulta por administradores; alteração de papéis, score, estado, duração, grid e placements não faz parte do MVP operacional.
 - Uma sessão pertence ao usuário autenticado.
 - Um usuário possui no máximo uma sessão `ACTIVE`; nova criação é rejeitada até conclusão ou abandono explícito.
 - Uma seleção só é válida se suas coordenadas corresponderem exatamente a uma palavra da sessão, em qualquer dos dois sentidos.

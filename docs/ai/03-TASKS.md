@@ -15,6 +15,7 @@
 - [x] Implementar pontuação autoritativa, bônus transacionais, snapshot da fórmula e integração com a interface.
 - [x] Implementar ranking, atualização Livewire quase em tempo real e fechamento do fluxo do jogador.
 - [x] Refinar mascote substituível, tutorial, feedback visual, acessibilidade e responsividade.
+- [x] Fechar consultas operacionais do Filament, estabilização QA, cabeçalhos de segurança e roteiro/readiness cPanel (sem deploy de produção).
 
 ## Próximas etapas
 
@@ -26,7 +27,7 @@
 - [x] Etapa 7: pontuação centralizada e transparente.
 - [x] Etapa 8: ranking + atualização quase em tempo real + fechamento do fluxo do jogador.
 - [x] Etapa 9: mascote/onça 8-bit + tutorial + feedback visual + polimento e responsividade.
-- [ ] Etapa 10: Filament final + QA + auditoria de segurança + correções.
+- [x] Etapa 10: Filament final + QA + auditoria de segurança + correções + preparação pré-deploy cPanel.
 - [ ] Etapa 11: deploy + documentação final do MVP.
 
 Este roadmap condensado substitui o cronograma anterior de 14 etapas; etapas concluídas não serão reabertas salvo regressão.

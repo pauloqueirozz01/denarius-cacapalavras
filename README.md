@@ -35,7 +35,7 @@ Credenciais locais padrão do banco: banco `denarius`, usuário `denarius` e sen
 
 Para criar o administrador local, preencha `ADMIN_NAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` no `.env` antes de `php artisan db:seed`. A senha deve ter pelo menos 12 caracteres, letras maiúsculas e minúsculas, números e símbolos. Se a configuração estiver incompleta, nenhum administrador será criado.
 
-Em produção, use HTTPS e configure `SESSION_SECURE_COOKIE=true`; `SESSION_HTTP_ONLY=true` e `SESSION_SAME_SITE=lax` já são os padrões documentados. O ambiente HTTP local mantém o cookie seguro desabilitado.
+O `.env.example` contém somente valores para desenvolvimento local e não deve ser enviado ao servidor. Para produção, configure `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` HTTPS real, `APP_KEY` própria, banco e credenciais exclusivos, `SESSION_SECURE_COOKIE=true` após confirmar SSL, `SESSION_HTTP_ONLY=true`, `SESSION_SAME_SITE=lax` e log level apropriado. Siga [CPANEL-DEPLOY](docs/deploy/CPANEL-DEPLOY.md) e confira [CPANEL-READINESS](docs/deploy/CPANEL-READINESS.md); o cPanel ainda precisa ser verificado antes de declarar readiness.
 
 ## Verificação
 
@@ -60,8 +60,11 @@ pnpm audit --audit-level=high
 - [Relatório da Etapa 7 — Pontuação e recompensas](docs/ai/11-RELATORIO-ETAPA-7.md)
 - [Relatório da Etapa 8 — Ranking e fluxo do jogador](docs/ai/12-RELATORIO-ETAPA-8.md)
 - [Relatório da Etapa 9 — Mascote e polimento visual](docs/ai/13-RELATORIO-ETAPA-9.md)
+- [Relatório da Etapa 10 — QA, segurança e pré-deploy](docs/ai/14-RELATORIO-ETAPA-10.md)
+- [Readiness cPanel](docs/deploy/CPANEL-READINESS.md)
+- [Roteiro de deploy cPanel](docs/deploy/CPANEL-DEPLOY.md)
 - [Guia de contribuição para IA](AGENTS.md)
 
 ## Estado atual
 
-Etapa 9 concluída: autenticação, catálogo, motor, partidas, jogo, pontuação, ranking, fluxo de retorno, mascote substituível, tutorial refinado e polimento responsivo estão implementados. O roadmap consolidado segue com QA, Filament final e auditoria de segurança na Etapa 10.
+Etapas 9 e 10 concluídas no código: autenticação, catálogo, motor, partidas, jogo, pontuação, ranking, fluxo de retorno, mascote substituível, tutorial refinado, painel administrativo de consulta, hardening básico e documentação pré-deploy. A compatibilidade real do cPanel continua **BLOCKED** até confirmar ambiente, Document Root, SSL, banco, privilégios, backup e rollback; o deploy pertence à Etapa 11.
