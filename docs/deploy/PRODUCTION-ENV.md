@@ -2,7 +2,24 @@
 
 Template e justificativa das variáveis do `.env` de produção. Este arquivo não contém segredos e não substitui o `.env` real, que existe somente no servidor, em `/home1/denarius/gamefinanceiro.com/.env` (fora do Document Root `/home1/denarius/gamefinanceiro.com/public`).
 
-Domínio confirmado pelo proprietário: `gamefinanceiro.com`. A primeira subida é feita em **HTTP**, sem SSL, para teste (decisão do proprietário em 2026-10-07). O usuário do banco é `denarius_financeuser` (confirmado pelo proprietário).
+## Ambiente cPanel confirmado
+
+| Item | Valor |
+|---|---|
+| Domínio | `gamefinanceiro.com` (HTTP enquanto não houver SSL) |
+| Diretório da aplicação | `/home1/denarius/gamefinanceiro.com` |
+| Document Root | `/home1/denarius/gamefinanceiro.com/public` |
+| PHP Web | PHP 8.4 (`ea-php84`); o `composer.lock` exige 8.4.1 ou superior |
+| Banco | Percona Server 5.7.44-48, `utf8mb4` / `utf8mb4_unicode_ci` |
+| Database | `denarius_gamefinanceiro` |
+| Usuário | `denarius_financeuser` |
+| Host / porta | `localhost` / `3306` |
+| Sessão / cache | `database` |
+| Fila | `sync` (sem worker, sem cron) |
+
+A primeira subida é feita em **HTTP**, sem SSL, para teste (decisão do proprietário em 2026-10-07).
+
+Este template vale só para o servidor. O `.env` local de desenvolvimento e o `.env.example` continuam com a configuração local e não devem receber estes valores.
 
 ## Template
 
@@ -11,6 +28,7 @@ Valores entre `<...>` são preenchidos manualmente no servidor. Nunca registrar 
 ```dotenv
 APP_NAME="Denarius Caça-Palavras"
 APP_ENV=production
+# Deixar vazio: gerado uma única vez no servidor por key:generate.
 APP_KEY=
 APP_DEBUG=false
 APP_URL=http://gamefinanceiro.com
@@ -44,9 +62,9 @@ QUEUE_CONNECTION=sync
 MAIL_MAILER=log
 
 # Somente durante a criação do primeiro administrador; remover em seguida.
-ADMIN_NAME=
-ADMIN_EMAIL=
-ADMIN_PASSWORD=
+ADMIN_NAME='<PREENCHER_NO_SERVIDOR>'
+ADMIN_EMAIL='<PREENCHER_NO_SERVIDOR>'
+ADMIN_PASSWORD='<PREENCHER_NO_SERVIDOR>'
 ```
 
 ## Por que cada variável é obrigatória
