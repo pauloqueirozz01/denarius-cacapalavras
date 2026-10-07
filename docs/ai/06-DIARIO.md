@@ -129,5 +129,5 @@
 - Não houve migration nova. Seeder de termos continua idempotente; seeder admin valida senha forte e não sobrescreve conta. Nenhum upload, job ou cron necessário foi identificado; `storage:link` não é usado pelos assets atuais.
 - A conexão do browser integrado foi recusada (`privileged native pipe bridge is not available; browser-client is not trusted`); checklist manual de 360, 390, 430, 768, 1024 e 1440 px foi incluído no relatório.
 - Sem acesso ao cPanel, valores de PHP Web/CLI, domínio, Document Root, SSL, symlink, database/user/grants, charset e permissões permanecem pendentes. `docs/deploy/CPANEL-READINESS.md` classifica readiness como `BLOCKED`; `CPANEL-DEPLOY.md` prepara fluxo, backup, migrations, seeders e rollback, sem executar operações remotas.
-- Commit funcional criado: `a7caa15 chore: harden application for production deployment`; commit documental e push da branch serão concluídos após revisão final.
+- Commits criados: `a7caa15 chore: harden application for production deployment` e `f03ef7f docs: add cpanel deployment readiness report`; branch publicada em `origin/chore/pre-deploy-hardening`, sem merge em `main`.
 - Próxima etapa: Etapa 11 — publicação no cPanel após resolver bloqueios e obter autorização explícita, seguida de smoke tests e documentação final.

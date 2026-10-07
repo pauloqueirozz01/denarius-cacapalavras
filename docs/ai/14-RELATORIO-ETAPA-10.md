@@ -142,7 +142,7 @@ Responsáveis: proprietário do domínio/conta cPanel e provedor de hospedagem p
 - **Branch:** `chore/pre-deploy-hardening`, criada sobre `feat/mascot-visual-polish` com Etapas 7–9.
 - **Commit funcional:** `a7caa15 chore: harden application for production deployment`.
 - **Commit documental:** `docs: add cpanel deployment readiness report` (SHA registrado no handoff da entrega).
-- **Push:** será publicada em `origin/chore/pre-deploy-hardening`, sem merge automático em `main`.
+- **Push:** realizado para `origin/chore/pre-deploy-hardening`; branch sincronizada, sem merge automático em `main`.
 - **Secrets:** `.env` permanece ignorado; varredura final dos arquivos staged necessária.
 
 ## 13. Checklist de readiness
