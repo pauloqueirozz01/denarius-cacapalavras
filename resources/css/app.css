@@ -112,19 +112,31 @@ dialog[open] {
 }
 
 @keyframes mascot-correct {
+    0%,
+    100% { transform: none; }
+
     50% { transform: translateY(-0.4rem) scale(1.04); }
 }
 
 @keyframes mascot-error {
+    0%,
+    100% { transform: none; }
+
     25% { transform: translateX(-0.2rem); }
     75% { transform: translateX(0.2rem); }
 }
 
 @keyframes mascot-celebrate {
+    0%,
+    100% { transform: none; }
+
     50% { transform: translateY(-0.55rem) rotate(-4deg) scale(1.06); }
 }
 
 @keyframes mascot-victory {
+    0%,
+    100% { transform: none; }
+
     45% { transform: translateY(-0.6rem) scale(1.1); }
 }
 
