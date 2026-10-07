@@ -24,6 +24,8 @@ class LeaderboardBoardTest extends TestCase
         $this->actingAs($user)
             ->get(route('ranking'))
             ->assertSee('Ranking financeiro')
+            ->assertSee('denarius-jaguar-placeholder.svg')
+            ->assertSeeHtml('alt=""')
             ->assertSee('Ainda não há partidas concluídas')
             ->assertSee('Voltar ao jogo');
     }

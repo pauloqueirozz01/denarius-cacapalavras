@@ -35,7 +35,7 @@
                     <article
                         wire:key="podium-{{ $entry->position }}"
                         @class([
-                            'rounded-3xl border p-5 shadow-xl',
+                            'rounded-3xl border p-5 shadow-xl transition-colors duration-200',
                             'border-amber-200/40 bg-amber-300/10 sm:order-2' => $entry->position === 1,
                             'border-white/15 bg-white/5 sm:order-1' => $entry->position === 2,
                             'border-orange-200/25 bg-orange-300/5 sm:order-3' => $entry->position === 3,
@@ -69,7 +69,7 @@
                         <li
                             wire:key="rank-{{ $entry->position }}"
                             @class([
-                                'grid grid-cols-[3rem_minmax(0,1fr)_5rem_4.5rem] items-center gap-2 border-b border-white/5 px-3 py-3 text-sm last:border-b-0 sm:grid-cols-[5rem_minmax(0,1fr)_8rem_7rem] sm:px-5',
+                                'grid grid-cols-[3rem_minmax(0,1fr)_5rem_4.5rem] items-center gap-2 border-b border-white/5 px-3 py-3 text-sm transition-colors duration-200 last:border-b-0 sm:grid-cols-[5rem_minmax(0,1fr)_8rem_7rem] sm:px-5',
                                 'bg-denarius-300/10 font-bold ring-inset ring-1 ring-denarius-300/35' => $entry->userId === auth()->id(),
                             ])
                         >

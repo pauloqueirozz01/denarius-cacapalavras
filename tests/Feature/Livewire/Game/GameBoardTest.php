@@ -65,8 +65,14 @@ class GameBoardTest extends TestCase
         $component
             ->assertSee('Juros')
             ->assertSee('Pix')
+            ->assertSeeHtml('data-mascot-state="idle"')
+            ->assertSee('denarius-jaguar-placeholder.svg')
             ->assertSee('0 de 2 palavras encontradas')
             ->assertSee('Pontuação')
+            ->assertSee('tutorial-title')
+            ->assertSee('cada palavra encontrada vale 100 pontos')
+            ->assertSee('Velocidade:')
+            ->assertSee('partidas concluídas disputam a classificação')
             ->assertSeeHtml('aria-label="Tabuleiro de caça-palavras com 3 linhas e 5 colunas"');
         $this->assertSame(15, substr_count($html, 'data-word-cell'));
         $this->assertStringNotContainsString('data-start-row', $html);
@@ -96,12 +102,34 @@ class GameBoardTest extends TestCase
             ->test(GameBoard::class)
             ->call('selectWord', 0, 0, 0, 4)
             ->assertSee('Boa! +100 pontos por Juros.')
+            ->assertSeeHtml('data-mascot-state="celebration"')
             ->assertSee('1 de 2 palavras encontradas')
             ->assertSeeHtml('letra J, encontrada');
 
         $this->assertTrue($firstWord->refresh()->is_found);
         $this->assertSame(1, $session->refresh()->found_words_count);
         $this->assertSame(100, $session->score);
+    }
+
+    public function test_non_milestone_correct_selection_uses_the_correct_mascot_state(): void
+    {
+        $user = User::factory()->create();
+        $session = GameSession::factory()->for($user)->active()->create([
+            'total_words' => 3,
+            'generation_config' => [
+                'rows' => 3,
+                'columns' => 5,
+                'word_count' => 3,
+                'scoring' => config('denarius.scoring'),
+            ],
+        ]);
+        GameSessionWord::factory()->for($session)->pending()->create();
+
+        Livewire::actingAs($user)
+            ->test(GameBoard::class)
+            ->call('selectWord', 0, 0, 0, 4)
+            ->assertSee('Boa! +100 pontos por Juros.')
+            ->assertSeeHtml('data-mascot-state="correct"');
     }
 
     public function test_invalid_and_manipulated_coordinates_do_not_change_progress(): void
@@ -114,7 +142,8 @@ class GameBoardTest extends TestCase
             ->call('selectWord', 0, 0, 2, 3)
             ->assertSee('não corresponde')
             ->call('selectWord', -1, 0, 0, 4)
-            ->assertSee('coordenadas da seleção são inválidas');
+            ->assertSee('coordenadas da seleção são inválidas')
+            ->assertSeeHtml('data-mascot-state="error"');
 
         $this->assertFalse($firstWord->refresh()->is_found);
         $this->assertSame(0, $session->refresh()->found_words_count);
@@ -172,6 +201,7 @@ class GameBoardTest extends TestCase
             ->assertSee('1.100')
             ->assertSee('01:05')
             ->assertSee('Jogar novamente')
+            ->assertSeeHtml('data-mascot-state="victory"')
             ->assertDontSee('Abandonar partida');
 
         $component->call('selectWord', 0, 0, 0, 4)->assertSee('já foi encerrada');
@@ -195,6 +225,7 @@ class GameBoardTest extends TestCase
             ->assertDontSee('Abandonar partida')
             ->assertDontSee('Sua melhor posição')
             ->assertDontSee('Ver ranking')
+            ->assertSeeHtml('data-mascot-state="abandoned"')
             ->call('selectWord', 0, 0, 0, 4)
             ->assertSee('já foi encerrada');
 

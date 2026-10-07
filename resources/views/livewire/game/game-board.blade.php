@@ -2,8 +2,15 @@
     $isActive = $session?->status === \App\Enums\GameSessionStatus::Active;
     $isCompleted = $session?->status === \App\Enums\GameSessionStatus::Completed;
     $isAbandoned = $session?->status === \App\Enums\GameSessionStatus::Abandoned;
+    $visualMascotState = $isCompleted ? 'victory' : ($isAbandoned ? 'abandoned' : $mascotState);
     $progress = $session === null ? 0 : (int) round(($session->found_words_count / $session->total_words) * 100);
     $startedAtMilliseconds = $session?->started_at?->getTimestamp() * 1000;
+    $scoringRules = $session?->generation_config['scoring'] ?? config('denarius.scoring');
+    $scoringRules = is_array($scoringRules) ? $scoringRules : config('denarius.scoring');
+    $speedBonusTiers = $scoringRules['speed_bonus_tiers'] ?? [];
+    $speedBonusTiers = is_array($speedBonusTiers)
+        ? array_filter($speedBonusTiers, fn (mixed $tier): bool => is_array($tier) && isset($tier['up_to_seconds'], $tier['points']))
+        : [];
 @endphp
 
 <div
@@ -21,6 +28,8 @@
 
         <button
             type="button"
+            aria-haspopup="dialog"
+            aria-controls="tutorial-dialog"
             class="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:border-denarius-300 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-denarius-300"
             x-on:click="$refs.tutorial.showModal()"
         >
@@ -45,7 +54,7 @@
 
     @if ($session === null)
         <section class="mx-auto grid max-w-3xl place-items-center rounded-[2rem] border border-white/15 bg-white/10 px-6 py-14 text-center shadow-2xl backdrop-blur-xl sm:px-12 sm:py-20">
-            <span class="grid size-20 place-items-center rounded-3xl bg-gradient-to-br from-denarius-300 to-fuchsia-400 text-4xl shadow-xl shadow-denarius-500/30" aria-hidden="true">⌁</span>
+            <x-mascot :state="$visualMascotState" size="large" class="mt-7" />
             <p class="mt-7 text-sm font-bold uppercase tracking-[0.24em] text-denarius-200">Olá, {{ auth()->user()->name }}</p>
             <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-5xl">Seu desafio começa agora.</h2>
             <p class="mt-4 max-w-xl text-base leading-7 text-denarius-100/75 sm:text-lg">
@@ -70,37 +79,40 @@
                 'border-amber-300/25 bg-amber-400/10' => $isAbandoned,
             ])>
                 <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-xs font-black uppercase tracking-[0.24em] {{ $isCompleted ? 'text-emerald-200' : 'text-amber-200' }}">
-                            {{ $isCompleted ? 'Desafio concluído' : 'Partida encerrada' }}
-                        </p>
-                        <h2 class="mt-2 text-2xl font-black sm:text-3xl">
-                            {{ $isCompleted ? 'Parabéns! Você encontrou todos os termos.' : 'Esta partida foi abandonada.' }}
-                        </h2>
-                        <p class="mt-2 text-sm text-white/70">
-                            Tempo registrado: <strong class="text-white">{{ sprintf('%02d:%02d', intdiv($session->duration_seconds ?? 0, 60), ($session->duration_seconds ?? 0) % 60) }}</strong>
-                        </p>
-                        <p class="mt-1 text-sm text-white/70">
-                            {{ $isCompleted ? 'Pontuação final' : 'Pontuação conquistada' }}: <strong class="text-white">{{ number_format($session->score, 0, ',', '.') }}</strong>
-                        </p>
-                        @if ($isCompleted && $scoreBreakdown !== null)
-                            <p class="mt-2 text-sm text-white/65">
-                                Palavras: +{{ number_format($scoreBreakdown->wordPoints, 0, ',', '.') }}
-                                · Conclusão: +{{ number_format($scoreBreakdown->completionBonus, 0, ',', '.') }}
-                                · Velocidade: +{{ number_format($scoreBreakdown->speedBonus, 0, ',', '.') }}
+                    <div class="flex min-w-0 items-center gap-4 sm:gap-5">
+                        <x-mascot :state="$visualMascotState" size="small" class="shrink-0" />
+                        <div class="min-w-0">
+                            <p class="text-xs font-black uppercase tracking-[0.24em] {{ $isCompleted ? 'text-emerald-200' : 'text-amber-200' }}">
+                                {{ $isCompleted ? 'Desafio concluído' : 'Partida encerrada' }}
                             </p>
-                        @endif
-                        @if ($isCompleted)
-                            <p class="mt-2 text-sm text-white/75">
-                                @if ($rankingPosition !== null)
-                                    Sua melhor posição: <strong class="text-white">{{ $rankingPosition->position }}º lugar</strong>
-                                @elseif ($rankingUnavailable)
-                                    Sua posição será consultada ao abrir o ranking.
-                                @else
-                                    Seu resultado entrará na classificação geral.
-                                @endif
+                            <h2 class="mt-2 text-2xl font-black sm:text-3xl">
+                                {{ $isCompleted ? 'Parabéns! Você encontrou todos os termos.' : 'Esta partida foi abandonada.' }}
+                            </h2>
+                            <p class="mt-2 text-sm text-white/70">
+                                Tempo registrado: <strong class="text-white">{{ sprintf('%02d:%02d', intdiv($session->duration_seconds ?? 0, 60), ($session->duration_seconds ?? 0) % 60) }}</strong>
                             </p>
-                        @endif
+                            <p class="mt-1 text-sm text-white/70">
+                                {{ $isCompleted ? 'Pontuação final' : 'Pontuação conquistada' }}: <strong class="text-white">{{ number_format($session->score, 0, ',', '.') }}</strong>
+                            </p>
+                            @if ($isCompleted && $scoreBreakdown !== null)
+                                <p class="mt-2 text-sm text-white/65">
+                                    Palavras: +{{ number_format($scoreBreakdown->wordPoints, 0, ',', '.') }}
+                                    · Conclusão: +{{ number_format($scoreBreakdown->completionBonus, 0, ',', '.') }}
+                                    · Velocidade: +{{ number_format($scoreBreakdown->speedBonus, 0, ',', '.') }}
+                                </p>
+                            @endif
+                            @if ($isCompleted)
+                                <p class="mt-2 text-sm text-white/75">
+                                    @if ($rankingPosition !== null)
+                                        Sua melhor posição: <strong class="text-white">{{ $rankingPosition->position }}º lugar</strong>
+                                    @elseif ($rankingUnavailable)
+                                        Sua posição será consultada ao abrir o ranking.
+                                    @else
+                                        Seu resultado entrará na classificação geral.
+                                    @endif
+                                </p>
+                            @endif
+                        </div>
                     </div>
                     <div class="flex shrink-0 flex-col gap-3 sm:items-end">
                         @if ($isCompleted)
@@ -176,6 +188,11 @@
             </section>
 
             <aside class="grid gap-5 lg:sticky lg:top-5">
+                <section class="flex items-center gap-4 rounded-3xl border border-denarius-300/15 bg-denarius-900/35 px-4 py-3 shadow-xl sm:justify-center lg:justify-start" aria-label="Mascote da partida">
+                    <x-mascot :state="$visualMascotState" size="small" class="shrink-0" />
+                    <p class="text-sm leading-6 text-denarius-100/75">{{ $visualMascotState === 'idle' ? 'Procure os termos em todas as direções.' : ($feedbackMessage !== '' ? $feedbackMessage : 'Continue no seu ritmo.') }}</p>
+                </section>
+
                 <section class="rounded-3xl border border-white/15 bg-white/10 p-5 shadow-xl backdrop-blur-xl sm:p-6">
                     <div class="grid grid-cols-3 gap-2 sm:gap-3">
                         <div
@@ -235,8 +252,8 @@
         </div>
     @endif
 
-    <dialog x-ref="tutorial" class="m-auto w-[min(92vw,32rem)] rounded-3xl border border-white/15 bg-denarius-950 p-0 text-white shadow-2xl backdrop:bg-black/70">
-        <section class="p-6 sm:p-8" aria-labelledby="tutorial-title">
+    <dialog id="tutorial-dialog" x-ref="tutorial" aria-modal="true" class="m-auto max-h-[90vh] w-[min(92vw,38rem)] overflow-y-auto rounded-3xl border border-white/15 bg-denarius-950 p-0 text-white shadow-2xl backdrop:bg-black/70">
+        <section class="p-5 sm:p-8" aria-labelledby="tutorial-title" aria-describedby="tutorial-description">
             <div class="flex items-start justify-between gap-4">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.22em] text-denarius-300">Instruções</p>
@@ -244,12 +261,36 @@
                 </div>
                 <button type="button" class="grid size-10 place-items-center rounded-full bg-white/10 text-xl hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-denarius-300" x-on:click="$refs.tutorial.close()" aria-label="Fechar instruções">×</button>
             </div>
-            <ol class="mt-6 grid gap-4 text-sm leading-6 text-denarius-100/80">
-                <li><strong class="text-white">1. Objetivo:</strong> encontre todos os termos financeiros escondidos no tabuleiro.</li>
-                <li><strong class="text-white">2. Seleção:</strong> clique ou toque na primeira letra e arraste até a última.</li>
-                <li><strong class="text-white">3. Direções:</strong> horizontal, vertical e diagonal, inclusive em sentido invertido.</li>
-                <li><strong class="text-white">4. Progresso:</strong> cada acerto fica destacado e é marcado na lista.</li>
-                <li><strong class="text-white">5. Finalização:</strong> a partida termina quando todos os termos forem encontrados.</li>
+            <p id="tutorial-description" class="mt-3 text-sm leading-6 text-white/70">Encontre os conceitos financeiros e acompanhe sua evolução. Você pode consultar estas instruções quando quiser.</p>
+
+            <div class="mt-5 rounded-2xl border border-denarius-300/20 bg-denarius-900/35 p-4" role="group" aria-label="Exemplo de seleção da palavra PIX">
+                <p class="text-xs font-bold uppercase tracking-[0.16em] text-denarius-200">Exemplo de seleção</p>
+                <div class="mt-3 flex items-center gap-2 font-mono text-lg font-black" aria-hidden="true">
+                    <span class="grid size-9 place-items-center rounded-lg bg-amber-300 text-denarius-950">P</span>
+                    <span class="text-denarius-300">→</span>
+                    <span class="grid size-9 place-items-center rounded-lg bg-amber-300 text-denarius-950">I</span>
+                    <span class="text-denarius-300">→</span>
+                    <span class="grid size-9 place-items-center rounded-lg bg-amber-300 text-denarius-950">X</span>
+                </div>
+                <p class="sr-only">Arraste em linha reta da letra P até a letra X.</p>
+            </div>
+
+            <ol class="mt-5 grid gap-3 text-sm leading-6 text-denarius-100/80">
+                <li><strong class="text-white">Objetivo:</strong> encontre todos os termos da lista. Clique/toque na primeira letra e arraste até a última.</li>
+                <li><strong class="text-white">Direções:</strong> as palavras aparecem na horizontal, vertical ou diagonal, também ao contrário.</li>
+                <li><strong class="text-white">Pontos:</strong> cada palavra encontrada vale {{ (int) ($scoringRules['points_per_word'] ?? 0) }} pontos. Completar a partida concede mais {{ (int) ($scoringRules['completion_bonus'] ?? 0) }}.</li>
+                <li><strong class="text-white">Velocidade:</strong>
+                    @if (count($speedBonusTiers) > 0)
+                        @foreach ($speedBonusTiers as $tier)
+                            até {{ (int) $tier['up_to_seconds'] }} s: +{{ (int) $tier['points'] }}@if (! $loop->last); @endif
+                        @endforeach
+                        pontos; acima da última faixa não há bônus.
+                    @else
+                        o bônus depende do tempo e das regras desta partida.
+                    @endif
+                </li>
+                <li><strong class="text-white">Ranking:</strong> partidas concluídas disputam a classificação; nela vale sua melhor partida.</li>
+                <li><strong class="text-white">Jogar novamente:</strong> ao terminar, escolha “Jogar novamente”. Seu resultado anterior fica salvo.</li>
             </ol>
         </section>
     </dialog>

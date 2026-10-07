@@ -37,6 +37,9 @@ class GameBoard extends Component
     #[Locked]
     public string $feedbackTone = 'info';
 
+    #[Locked]
+    public string $mascotState = 'idle';
+
     public function startGame(StartGameSessionAction $startGameSession): void
     {
         $user = $this->authenticatedUser();
@@ -47,7 +50,7 @@ class GameBoard extends Component
 
         try {
             $startGameSession->execute($user);
-            $this->setFeedback('Sua partida começou. Encontre os termos escondidos!', 'success');
+            $this->setFeedback('Sua partida começou. Encontre os termos escondidos!', 'success', 'idle');
         } catch (ActiveGameSessionExistsException) {
             $this->setFeedback('Sua partida ativa foi retomada.', 'info');
         } catch (
@@ -129,6 +132,7 @@ class GameBoard extends Component
                 $this->setFeedback(
                     "Parabéns! +{$result->wordPoints} pela palavra,{$bonusMessage}. Pontuação final: {$result->session->score}.",
                     'success',
+                    'victory',
                 );
 
                 return ['active' => false];
@@ -137,6 +141,9 @@ class GameBoard extends Component
             $this->setFeedback(
                 "Boa! +{$result->pointsAwarded} pontos por {$result->word->original_term}.",
                 'success',
+                $result->session->found_words_count === (int) ceil($result->session->total_words / 2)
+                    ? 'celebration'
+                    : 'correct',
             );
 
             return ['active' => true];
@@ -236,6 +243,7 @@ class GameBoard extends Component
 
         return view('livewire.game.game-board', [
             'session' => $session,
+            'mascotState' => $this->mascotState,
             'words' => $words,
             'foundCells' => $foundCells,
             'rankingPosition' => $rankingPosition,
@@ -304,9 +312,14 @@ class GameBoard extends Component
         return $cells;
     }
 
-    private function setFeedback(string $message, string $tone): void
+    private function setFeedback(string $message, string $tone, ?string $mascotState = null): void
     {
         $this->feedbackMessage = $message;
         $this->feedbackTone = $tone;
+        $this->mascotState = $mascotState ?? match ($tone) {
+            'success' => 'correct',
+            'error' => 'error',
+            default => 'idle',
+        };
     }
 }

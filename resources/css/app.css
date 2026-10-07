@@ -35,6 +35,66 @@
     -webkit-touch-callout: none;
 }
 
+.word-search-board:focus-visible {
+    outline: 3px solid #c5a6ff;
+    outline-offset: 4px;
+}
+
+@layer components {
+    .denarius-mascot {
+        display: grid;
+        justify-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        text-align: center;
+    }
+
+    .denarius-mascot img {
+        width: 5rem;
+        aspect-ratio: 1;
+        image-rendering: pixelated;
+        object-fit: contain;
+        filter: drop-shadow(0 0.5rem 1rem rgb(0 0 0 / 25%));
+    }
+
+    .denarius-mascot--small img {
+        width: 4rem;
+    }
+
+    .denarius-mascot--large img {
+        width: clamp(7rem, 24vw, 10rem);
+    }
+
+    .denarius-mascot figcaption {
+        color: rgb(237 228 255 / 82%);
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    .denarius-mascot--correct img {
+        animation: mascot-correct 420ms ease-out both;
+    }
+
+    .denarius-mascot--error img {
+        animation: mascot-error 300ms ease-out both;
+    }
+
+    .denarius-mascot--celebration img {
+        filter: drop-shadow(0 0 1rem rgb(245 189 78 / 45%));
+        animation: mascot-celebrate 520ms ease-out both;
+    }
+
+    .denarius-mascot--victory img {
+        filter: drop-shadow(0 0 1.25rem rgb(197 166 255 / 55%));
+        animation: mascot-victory 650ms ease-out both;
+    }
+
+    .denarius-mascot--abandoned img {
+        filter: grayscale(0.45) drop-shadow(0 0.5rem 1rem rgb(0 0 0 / 25%));
+    }
+}
+
 dialog[open] {
     animation: dialog-enter 160ms ease-out;
 }
@@ -51,8 +111,30 @@ dialog[open] {
     }
 }
 
+@keyframes mascot-correct {
+    50% { transform: translateY(-0.4rem) scale(1.04); }
+}
+
+@keyframes mascot-error {
+    25% { transform: translateX(-0.2rem); }
+    75% { transform: translateX(0.2rem); }
+}
+
+@keyframes mascot-celebrate {
+    50% { transform: translateY(-0.55rem) rotate(-4deg) scale(1.06); }
+}
+
+@keyframes mascot-victory {
+    45% { transform: translateY(-0.6rem) scale(1.1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    dialog[open] {
-        animation: none;
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
     }
 }
