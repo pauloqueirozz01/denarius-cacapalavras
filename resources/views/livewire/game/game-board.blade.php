@@ -80,6 +80,9 @@
                         <p class="mt-2 text-sm text-white/70">
                             Tempo registrado: <strong class="text-white">{{ sprintf('%02d:%02d', intdiv($session->duration_seconds ?? 0, 60), ($session->duration_seconds ?? 0) % 60) }}</strong>
                         </p>
+                        <p class="mt-1 text-sm text-white/70">
+                            {{ $isCompleted ? 'Pontuação final' : 'Pontuação conquistada' }}: <strong class="text-white">{{ number_format($session->score, 0, ',', '.') }}</strong>
+                        </p>
                     </div>
                     <button
                         type="button"
@@ -151,7 +154,7 @@
 
             <aside class="grid gap-5 lg:sticky lg:top-5">
                 <section class="rounded-3xl border border-white/15 bg-white/10 p-5 shadow-xl backdrop-blur-xl sm:p-6">
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-3 gap-2 sm:gap-3">
                         <div
                             wire:key="game-clock-{{ $session->id }}-{{ $session->status->value }}"
                             class="rounded-2xl bg-denarius-950/55 p-4 ring-1 ring-white/10"
@@ -163,6 +166,10 @@
                         <div class="rounded-2xl bg-denarius-950/55 p-4 ring-1 ring-white/10">
                             <p class="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-denarius-200">Tempo</p>
                             <p class="mt-2 font-mono text-2xl font-black tabular-nums" x-text="formattedTime">00:00</p>
+                        </div>
+                        <div class="rounded-2xl bg-denarius-950/55 p-3 ring-1 ring-white/10 sm:p-4">
+                            <p class="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-denarius-200 sm:text-[0.65rem] sm:tracking-[0.2em]">Pontuação</p>
+                            <p class="mt-2 text-xl font-black tabular-nums sm:text-2xl">{{ number_format($session->score, 0, ',', '.') }}</p>
                         </div>
                     </div>
 

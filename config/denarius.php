@@ -29,6 +29,16 @@ return [
         'alphabet' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     ],
 
+    'scoring' => [
+        'points_per_word' => 100,
+        'completion_bonus' => 500,
+        'speed_bonus_tiers' => [
+            ['up_to_seconds' => 120, 'points' => 500],
+            ['up_to_seconds' => 180, 'points' => 300],
+            ['up_to_seconds' => 300, 'points' => 150],
+        ],
+    ],
+
     'game_interface' => [
         'decay_seconds' => 60,
         'start' => [

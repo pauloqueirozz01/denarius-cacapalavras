@@ -118,12 +118,24 @@ class GameBoard extends Component
             }
 
             if ($result->completedSession) {
-                $this->setFeedback('Parabéns! Você encontrou todos os termos.', 'success');
+                $bonusMessage = " +{$result->completionBonus} de conclusão";
+
+                if ($result->speedBonus > 0) {
+                    $bonusMessage .= " e +{$result->speedBonus} de velocidade";
+                }
+
+                $this->setFeedback(
+                    "Parabéns! +{$result->wordPoints} pela palavra,{$bonusMessage}. Pontuação final: {$result->session->score}.",
+                    'success',
+                );
 
                 return ['active' => false];
             }
 
-            $this->setFeedback("Boa! Você encontrou {$result->word->original_term}.", 'success');
+            $this->setFeedback(
+                "Boa! +{$result->pointsAwarded} pontos por {$result->word->original_term}.",
+                'success',
+            );
 
             return ['active' => true];
         } catch (InvalidWordSelectionException) {

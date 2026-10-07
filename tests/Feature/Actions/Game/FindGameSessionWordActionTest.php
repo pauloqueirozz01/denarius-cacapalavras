@@ -14,6 +14,7 @@ use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use InvalidArgumentException;
 use Tests\TestCase;
 
 class FindGameSessionWordActionTest extends TestCase
@@ -25,13 +26,18 @@ class FindGameSessionWordActionTest extends TestCase
         $this->travelTo('2026-10-06 12:00:00');
         [$user, $session, $word] = $this->pendingWordSession(totalWords: 2);
 
-        $result = (new FindGameSessionWordAction)->execute($user, $session, 0, 0, 0, 4);
+        $result = app(FindGameSessionWordAction::class)->execute($user, $session, 0, 0, 0, 4);
 
         $this->assertTrue($result->wasNewlyFound);
         $this->assertFalse($result->completedSession);
         $this->assertTrue($result->word->is_found);
         $this->assertSame('2026-10-06 12:00:00', $result->word->found_at->toDateTimeString());
         $this->assertSame(1, $result->session->found_words_count);
+        $this->assertSame(100, $result->pointsAwarded);
+        $this->assertSame(100, $result->wordPoints);
+        $this->assertSame(0, $result->completionBonus);
+        $this->assertSame(0, $result->speedBonus);
+        $this->assertSame(100, $result->session->score);
         $this->assertSame(GameSessionStatus::Active, $result->session->status);
         $this->assertDatabaseHas('game_session_words', [
             'id' => $word->id,
@@ -43,7 +49,7 @@ class FindGameSessionWordActionTest extends TestCase
     {
         [$user, $session] = $this->pendingWordSession(totalWords: 2);
 
-        $result = (new FindGameSessionWordAction)->execute($user, $session, 0, 4, 0, 0);
+        $result = app(FindGameSessionWordAction::class)->execute($user, $session, 0, 4, 0, 0);
 
         $this->assertTrue($result->wasNewlyFound);
         $this->assertSame('JUROS', $result->word->normalized_term);
@@ -55,7 +61,7 @@ class FindGameSessionWordActionTest extends TestCase
         [$user, $session, $word] = $this->pendingWordSession(totalWords: 2);
 
         try {
-            (new FindGameSessionWordAction)->execute($user, $session, 1, 0, 1, 4);
+            app(FindGameSessionWordAction::class)->execute($user, $session, 1, 0, 1, 4);
             $this->fail('Era esperada uma rejeição para a seleção inexistente.');
         } catch (InvalidWordSelectionException $exception) {
             $this->assertStringContainsString('não corresponde', $exception->getMessage());
@@ -63,6 +69,7 @@ class FindGameSessionWordActionTest extends TestCase
 
         $this->assertFalse($word->refresh()->is_found);
         $this->assertSame(0, $session->refresh()->found_words_count);
+        $this->assertSame(0, $session->score);
         $this->assertSame(GameSessionStatus::Active, $session->status);
     }
 
@@ -73,13 +80,13 @@ class FindGameSessionWordActionTest extends TestCase
         $this->expectException(InvalidWordSelectionException::class);
         $this->expectExceptionMessage('fora dos limites');
 
-        (new FindGameSessionWordAction)->execute($user, $session, -1, 0, 0, 4);
+        app(FindGameSessionWordAction::class)->execute($user, $session, -1, 0, 0, 4);
     }
 
     public function test_duplicate_selection_is_idempotent_even_with_a_stale_session_instance(): void
     {
         [$user, $session, $word] = $this->pendingWordSession(totalWords: 2);
-        $action = new FindGameSessionWordAction;
+        $action = app(FindGameSessionWordAction::class);
 
         $firstResult = $action->execute($user, $session, 0, 0, 0, 4);
         $firstFoundAt = $firstResult->word->found_at->toISOString();
@@ -88,7 +95,9 @@ class FindGameSessionWordActionTest extends TestCase
         $this->assertTrue($firstResult->wasNewlyFound);
         $this->assertFalse($secondResult->wasNewlyFound);
         $this->assertFalse($secondResult->completedSession);
+        $this->assertSame(0, $secondResult->pointsAwarded);
         $this->assertSame(1, $secondResult->session->found_words_count);
+        $this->assertSame(100, $secondResult->session->score);
         $this->assertSame($firstFoundAt, $word->refresh()->found_at->toISOString());
         $this->assertDatabaseCount('game_session_words', 1);
     }
@@ -101,13 +110,18 @@ class FindGameSessionWordActionTest extends TestCase
             startedAt: now()->subSeconds(65),
         );
 
-        $result = (new FindGameSessionWordAction)->execute($user, $session, 0, 0, 0, 4);
+        $result = app(FindGameSessionWordAction::class)->execute($user, $session, 0, 0, 0, 4);
 
         $this->assertTrue($result->completedSession);
         $this->assertSame(GameSessionStatus::Completed, $result->session->status);
         $this->assertSame(1, $result->session->found_words_count);
         $this->assertSame('2026-10-06 12:01:05', $result->session->finished_at->toDateTimeString());
         $this->assertSame(65, $result->session->duration_seconds);
+        $this->assertSame(1100, $result->pointsAwarded);
+        $this->assertSame(100, $result->wordPoints);
+        $this->assertSame(500, $result->completionBonus);
+        $this->assertSame(500, $result->speedBonus);
+        $this->assertSame(1100, $result->session->score);
     }
 
     public function test_recalculates_the_authoritative_counter_from_found_word_rows(): void
@@ -129,8 +143,10 @@ class FindGameSessionWordActionTest extends TestCase
                 'end_row' => 1,
                 'end_column' => 2,
             ]);
+        $session->score = 100;
+        $session->save();
 
-        $result = (new FindGameSessionWordAction)->execute(
+        $result = app(FindGameSessionWordAction::class)->execute(
             $user,
             $session,
             $pendingWord->start_row,
@@ -141,6 +157,7 @@ class FindGameSessionWordActionTest extends TestCase
 
         $this->assertSame(2, $result->session->found_words_count);
         $this->assertSame(GameSessionStatus::Completed, $result->session->status);
+        $this->assertSame(1200, $result->session->score);
     }
 
     public function test_completed_session_rejects_word_selection(): void
@@ -152,7 +169,7 @@ class FindGameSessionWordActionTest extends TestCase
         $this->expectException(InvalidGameSessionStateException::class);
         $this->expectExceptionMessage("estado 'completed'");
 
-        (new FindGameSessionWordAction)->execute(
+        app(FindGameSessionWordAction::class)->execute(
             $user,
             $session,
             $word->start_row,
@@ -171,7 +188,7 @@ class FindGameSessionWordActionTest extends TestCase
         $this->expectException(InvalidGameSessionStateException::class);
         $this->expectExceptionMessage("estado 'abandoned'");
 
-        (new FindGameSessionWordAction)->execute(
+        app(FindGameSessionWordAction::class)->execute(
             $user,
             $session,
             $word->start_row,
@@ -187,7 +204,7 @@ class FindGameSessionWordActionTest extends TestCase
         $otherUser = User::factory()->create();
 
         try {
-            (new FindGameSessionWordAction)->execute(
+            app(FindGameSessionWordAction::class)->execute(
                 $otherUser,
                 $session,
                 $word->start_row,
@@ -199,18 +216,66 @@ class FindGameSessionWordActionTest extends TestCase
         } catch (AuthorizationException) {
             $this->assertFalse($word->refresh()->is_found);
             $this->assertSame(0, $owner->gameSessions()->findOrFail($session->id)->found_words_count);
+            $this->assertSame(0, $session->refresh()->score);
+        }
+    }
+
+    public function test_uses_the_scoring_snapshot_saved_with_the_session(): void
+    {
+        [$user, $session] = $this->pendingWordSession(totalWords: 2, scoringConfiguration: [
+            'points_per_word' => 75,
+            'completion_bonus' => 400,
+            'speed_bonus_tiers' => [
+                ['up_to_seconds' => 120, 'points' => 250],
+            ],
+        ]);
+
+        $result = app(FindGameSessionWordAction::class)->execute($user, $session, 0, 0, 0, 4);
+
+        $this->assertSame(75, $result->pointsAwarded);
+        $this->assertSame(75, $result->session->score);
+    }
+
+    public function test_rolls_back_the_found_word_when_scoring_configuration_is_invalid(): void
+    {
+        [$user, $session, $word] = $this->pendingWordSession(totalWords: 2, scoringConfiguration: [
+            'points_per_word' => -1,
+            'completion_bonus' => 500,
+            'speed_bonus_tiers' => [
+                ['up_to_seconds' => 120, 'points' => 500],
+            ],
+        ]);
+
+        try {
+            app(FindGameSessionWordAction::class)->execute($user, $session, 0, 0, 0, 4);
+            $this->fail('Era esperada uma rejeição para a configuração de pontuação inválida.');
+        } catch (InvalidArgumentException) {
+            $this->assertFalse($word->refresh()->is_found);
+            $this->assertNull($word->found_at);
+            $this->assertSame(0, $session->refresh()->found_words_count);
+            $this->assertSame(0, $session->score);
         }
     }
 
     /**
+     * @param  array<string, mixed>|null  $scoringConfiguration
      * @return array{User, GameSession, GameSessionWord}
      */
-    private function pendingWordSession(int $totalWords, ?CarbonInterface $startedAt = null): array
-    {
+    private function pendingWordSession(
+        int $totalWords,
+        ?CarbonInterface $startedAt = null,
+        ?array $scoringConfiguration = null,
+    ): array {
         $user = User::factory()->create();
         $session = GameSession::factory()->for($user)->active()->create([
             'total_words' => $totalWords,
             'started_at' => $startedAt ?? now()->subMinute(),
+            'generation_config' => [
+                'rows' => 3,
+                'columns' => 5,
+                'word_count' => $totalWords,
+                'scoring' => $scoringConfiguration ?? config('denarius.scoring'),
+            ],
         ]);
         $word = $this->createWord($session);
 

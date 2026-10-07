@@ -10,6 +10,7 @@ use App\Models\GameSession;
 use App\Models\GameSessionWord;
 use App\Models\User;
 use App\Services\GameSessionSnapshotValidator;
+use App\Services\ScoreCalculator;
 use App\Services\WordSearchGeneratorService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -19,6 +20,7 @@ class StartGameSessionAction
     public function __construct(
         private readonly WordSearchGeneratorService $wordSearchGenerator,
         private readonly GameSessionSnapshotValidator $snapshotValidator,
+        private readonly ScoreCalculator $scoreCalculator,
     ) {}
 
     /**
@@ -63,10 +65,12 @@ class StartGameSessionAction
             $session->columns = $result->columns;
             $session->total_words = count($result->placements);
             $session->found_words_count = 0;
+            $session->score = 0;
             $session->generation_config = [
                 'rows' => $result->rows,
                 'columns' => $result->columns,
                 'word_count' => count($result->placements),
+                'scoring' => $this->scoreCalculator->configuration(),
             ];
             $session->started_at = $startedAt;
             $session->save();

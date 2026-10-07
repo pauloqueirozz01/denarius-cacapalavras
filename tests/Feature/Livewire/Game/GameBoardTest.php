@@ -66,6 +66,7 @@ class GameBoardTest extends TestCase
             ->assertSee('Juros')
             ->assertSee('Pix')
             ->assertSee('0 de 2 palavras encontradas')
+            ->assertSee('Pontuação')
             ->assertSeeHtml('aria-label="Tabuleiro de caça-palavras com 3 linhas e 5 colunas"');
         $this->assertSame(15, substr_count($html, 'data-word-cell'));
         $this->assertStringNotContainsString('data-start-row', $html);
@@ -94,12 +95,13 @@ class GameBoardTest extends TestCase
         Livewire::actingAs($user)
             ->test(GameBoard::class)
             ->call('selectWord', 0, 0, 0, 4)
-            ->assertSee('Boa! Você encontrou Juros.')
+            ->assertSee('Boa! +100 pontos por Juros.')
             ->assertSee('1 de 2 palavras encontradas')
             ->assertSeeHtml('letra J, encontrada');
 
         $this->assertTrue($firstWord->refresh()->is_found);
         $this->assertSame(1, $session->refresh()->found_words_count);
+        $this->assertSame(100, $session->score);
     }
 
     public function test_invalid_and_manipulated_coordinates_do_not_change_progress(): void
@@ -116,6 +118,7 @@ class GameBoardTest extends TestCase
 
         $this->assertFalse($firstWord->refresh()->is_found);
         $this->assertSame(0, $session->refresh()->found_words_count);
+        $this->assertSame(0, $session->score);
     }
 
     public function test_reverse_selection_and_duplicate_request_are_integrated_idempotently(): void
@@ -126,11 +129,12 @@ class GameBoardTest extends TestCase
 
         $component
             ->call('selectWord', 0, 4, 0, 0)
-            ->assertSee('Boa! Você encontrou Juros.')
+            ->assertSee('Boa! +100 pontos por Juros.')
             ->call('selectWord', 0, 4, 0, 0)
             ->assertSee('Você já encontrou essa palavra.');
 
         $this->assertSame(1, $session->refresh()->found_words_count);
+        $this->assertSame(100, $session->score);
         $this->assertNotNull($firstWord->refresh()->found_at);
     }
 
@@ -162,8 +166,10 @@ class GameBoardTest extends TestCase
         $component = Livewire::actingAs($user)
             ->test(GameBoard::class)
             ->call('selectWord', 0, 0, 0, 4)
-            ->assertSee('Parabéns! Você encontrou todos os termos.')
+            ->assertSee('Parabéns! +100 pela palavra, +500 de conclusão e +500 de velocidade. Pontuação final: 1100.')
             ->assertSee('Tempo registrado:')
+            ->assertSee('Pontuação final:')
+            ->assertSee('1.100')
             ->assertSee('01:05')
             ->assertSee('Nova partida')
             ->assertDontSee('Abandonar partida');
@@ -172,6 +178,7 @@ class GameBoardTest extends TestCase
 
         $this->assertSame(GameSessionStatus::Completed, $session->refresh()->status);
         $this->assertSame(1, $session->found_words_count);
+        $this->assertSame(1100, $session->score);
         $this->assertTrue($word->refresh()->is_found);
     }
 
@@ -218,9 +225,12 @@ class GameBoardTest extends TestCase
         $firstLoad = Livewire::actingAs($user)->test(GameBoard::class);
         $secondLoad = Livewire::actingAs($user)->test(GameBoard::class);
 
-        $firstLoad->assertSee('1 de 2 palavras encontradas');
+        $firstLoad
+            ->assertSee('1 de 2 palavras encontradas')
+            ->assertSee('100');
         $secondLoad
             ->assertSee('1 de 2 palavras encontradas')
+            ->assertSee('100')
             ->assertSeeHtml('letra J, encontrada');
         $this->assertStringContainsString($startedAtMilliseconds, $firstLoad->html());
         $this->assertStringContainsString($startedAtMilliseconds, $secondLoad->html());
@@ -254,6 +264,7 @@ class GameBoardTest extends TestCase
             ],
             'total_words' => 2,
             'found_words_count' => $firstWordFound ? 1 : 0,
+            'score' => $firstWordFound ? 100 : 0,
         ]);
         $juros = FinancialTerm::factory()->active()->create([
             'term' => 'Juros',
