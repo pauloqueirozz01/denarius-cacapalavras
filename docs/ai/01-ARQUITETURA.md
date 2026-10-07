@@ -98,9 +98,9 @@ MySQL
 ## Ranking e jornada do jogador
 
 - `/ranking` exige autenticação e renderiza uma página Blade com um componente Livewire separado para o ranking dinâmico.
-- `RankingService` consulta somente sessões `COMPLETED` pertencentes a usuários `participant`; duas funções `ROW_NUMBER()` elegem a melhor sessão por usuário e ordenam o ranking.
+- `RankingService` consulta somente sessões `COMPLETED` pertencentes a usuários `participant`; um anti-join `NOT EXISTS` e a ordem total elegem a melhor sessão por usuário sem window functions, CTEs ou sintaxe exclusiva do MySQL 8.
 - A regra SQL aplica score decrescente, duração crescente, conclusão mais antiga e ID da sessão crescente; duração e conclusão nulas ficam explicitamente depois de valores conhecidos.
-- A consulta usa paginação limitada e executa uma consulta separada para a melhor posição do usuário, sem carregar o histórico completo para PHP.
+- A consulta usa paginação limitada; as posições da página derivam do offset, e a posição individual fora da página conta os participantes que vêm antes da melhor sessão. O histórico não é carregado integralmente para PHP.
 - O score vem sempre de `game_sessions.score`. Nenhuma fórmula é executada no ranking.
 - `LeaderboardBoard` atualiza sua área a cada cinco segundos com `wire:poll`; polling é somente leitura, não inicia partidas e respeita a redução automática de frequência em abas em segundo plano do Livewire.
 - A interface pública mostra nome, posição, score e duração. Emails, snapshots, placements e IDs de sessão não são renderizados.
@@ -110,9 +110,11 @@ MySQL
 
 ## Preparação cPanel
 
-- O banco local foi confirmado como MySQL 8.4.11, `utf8mb4`/`utf8mb4_0900_ai_ci`; o `EXPLAIN FORMAT=JSON` da janela do ranking usou o índice existente de status e mostrou filesort/tabela temporária. Sem volume representativo, nenhum índice novo foi adicionado.
-- PHP CLI e extensões foram medidos somente na máquina de desenvolvimento. Compatibilidade do PHP Web/CLI, Document Root terminado em `/public`, SSL, permissões, symlinks, MySQL remoto e privilégios de conta cPanel permanecem condicionantes até verificação no provedor.
-- Em produção, gerar artefato frontend local (`public/build`), manter `.env` e `storage` fora do Document Root e executar migrations com `--force`. A decisão de Composer no host e o formato final do pacote devem ser confirmados contra a versão PHP efetiva do cPanel.
+- O banco local é MySQL 8.4.11 (`utf8mb4`/`utf8mb4_0900_ai_ci`). O alvo informado é Percona Server 5.7.44-48 com `utf8mb4_unicode_ci`; Laravel também usa `utf8mb4_unicode_ci` por padrão. Não foi alterada collation nem migration.
+- O `composer.lock` inclui dependências com PHP mínimo `>=8.4.1`; por isso o requisito foi alinhado para `^8.4.1`. A máquina de desenvolvimento validou somente PHP CLI 8.5.11; PHP 8.4 ainda precisa ser testado no host.
+- O ranking não depende mais de `ROW_NUMBER()`/window functions; usa `NOT EXISTS` e comparações compatíveis com MySQL 5.7. A suíte SQLite verifica a regra; falta executar a query e `EXPLAIN` no Percona real.
+- Em produção, gerar `public/build` localmente, incluir `vendor/` no ZIP de release, manter `.env` e `storage` fora do Document Root e executar migrations com `--force` somente após backup. Composer remoto não será requisito.
+- O domínio, Document Root, PHP CLI/extensões, associação/grants do banco, SSL/DNS, permissões, symlinks, backups e rollback continuam condicionantes a serem verificados no cPanel.
 
 ## Apresentação e mascote
 

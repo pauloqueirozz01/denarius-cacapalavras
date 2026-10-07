@@ -16,6 +16,7 @@
 - [x] Implementar ranking, atualização Livewire quase em tempo real e fechamento do fluxo do jogador.
 - [x] Refinar mascote substituível, tutorial, feedback visual, acessibilidade e responsividade.
 - [x] Fechar consultas operacionais do Filament, estabilização QA, cabeçalhos de segurança e roteiro/readiness cPanel (sem deploy de produção).
+- [x] Check-up pré-deploy cPanel: remover dependência de window functions do ranking, alinhar requisito PHP ao lock e definir contrato técnico da Etapa 11.
 
 ## Próximas etapas
 

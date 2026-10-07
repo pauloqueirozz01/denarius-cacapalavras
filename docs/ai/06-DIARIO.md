@@ -131,3 +131,13 @@
 - Sem acesso ao cPanel, valores de PHP Web/CLI, domínio, Document Root, SSL, symlink, database/user/grants, charset e permissões permanecem pendentes. `docs/deploy/CPANEL-READINESS.md` classifica readiness como `BLOCKED`; `CPANEL-DEPLOY.md` prepara fluxo, backup, migrations, seeders e rollback, sem executar operações remotas.
 - Commits criados: `a7caa15 chore: harden application for production deployment` e `f03ef7f docs: add cpanel deployment readiness report`; branch publicada em `origin/chore/pre-deploy-hardening`, sem merge em `main`.
 - Próxima etapa: Etapa 11 — publicação no cPanel após resolver bloqueios e obter autorização explícita, seguida de smoke tests e documentação final.
+
+## 2026-10-07 — Check-up de compatibilidade cPanel pré-Etapa 11
+
+- Confirmado pelo proprietário: alvo `gamedaoncinha.com`, PHP 8.4 disponível por domínio, Percona Server 5.7.44-48, database `denarius_gamefinanceiro`, user `denarius_financeirouser`, `localhost:3306`, charset/collation `utf8mb4`/`utf8mb4_unicode_ci`; Document Root desejado termina em `/public`. Nenhuma conexão ao host foi feita.
+- O `RankingService` anterior usava `ROW_NUMBER() OVER`, incompatível com MySQL/Percona 5.7. Foi substituído por anti-join `NOT EXISTS`, comparador lexicográfico com os mesmos desempates e posição derivada da paginação/contagem de entradas melhores; não há mudança de regra nem recálculo de score.
+- Acrescentado teste de desempate global por menor ID mesmo quando o menor ID é inserido depois. Baseline antes das alterações: 197 testes/1.325 assertions; ranking após a mudança: 8 testes/29 assertions aprovados.
+- A auditoria de `composer.lock` encontrou dependências de runtime com PHP mínimo `>=8.4.1`, embora `composer.json` declarasse `^8.3`. O requisito foi alinhado a `^8.4.1` e o lock atualizado sem alterar versões de pacotes.
+- As migrations usam JSON básico e tipos/índices tradicionais compatíveis com 5.7.44; configuração de database já usa `utf8mb4_unicode_ci`. Nenhuma migration, collation, sessão, cache ou fila foi alterada.
+- Estratégia de release definida: `vendor/` no ZIP, gerado com PHP 8.4.1+; Node/pnpm só no build local, `public/build` incluído. Nenhuma alteração no host, migration de produção ou deploy executada.
+- Permanece `BLOCKED`: PHP CLI/patch/extensões, associação/grants, SSL/DNS, Document Root, permissões, symlinks, backup/rollback e validação direta da consulta/migrations no Percona real ainda não foram confirmados. Percona 5.7 está em fim de vida upstream e requer confirmação de suporte/patching do provedor.

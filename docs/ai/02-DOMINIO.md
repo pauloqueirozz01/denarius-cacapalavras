@@ -32,6 +32,7 @@
 - Cada usuário aparece uma única vez, pela sua melhor sessão concluída, e `score` é lido do valor persistido.
 - A ordenação da melhor partida e do ranking global é: score decrescente, duração crescente, `finished_at` mais antigo e ID de sessão crescente.
 - Para registros concluídos legados com duração ou término nulos, valores conhecidos vêm primeiro; o ID final mantém ordem total determinística.
+- A seleção da melhor tentativa usa `NOT EXISTS` com comparador lexicográfico equivalente à ordenação e não utiliza funções de janela; a posição paginada usa offset e a posição individual conta os participantes anteriores.
 - A posição individual representa sempre a melhor partida concluída, mesmo quando o resultado recém-finalizado não substitui o recorde.
 - Sessões `ACTIVE` e `ABANDONED` nunca entram no ranking, mesmo que tenham score.
 - Ler/atualizar ranking por polling não altera sessões nem cria partidas.

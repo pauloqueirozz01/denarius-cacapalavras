@@ -5,11 +5,12 @@ Este roteiro prepara a execução futura; nada abaixo foi executado em produçã
 ## Pré-condições obrigatórias
 
 1. Domínio/DNS criados, HTTPS válido e renovação automática confirmada.
-2. PHP Web e CLI compatíveis com o `composer.lock`, todas as extensões obrigatórias disponíveis e CLI do cron usando o mesmo PHP compatível.
+2. PHP Web e CLI usados pelo Artisan em PHP 8.4.1+ compatíveis com o `composer.lock`, com todas as extensões obrigatórias disponíveis.
 3. Document Root configurado diretamente para o diretório `public` da release. Nunca apontar para a raiz Laravel nem colocar `.env`, `vendor`, `.git`, `storage` ou `config` sob `public_html`.
-4. Banco MySQL/MariaDB compatível com as migrations e a query `ROW_NUMBER()`; usuário associado ao banco com privilégios requeridos; conexão validada.
-5. Suporte a symlinks confirmado antes de adotar `current`; se indisponível, parar e aprovar uma topologia alternativa segura antes de publicar.
-6. Backup validado de banco, `.env` atual e arquivos da versão em produção. Definir responsável e janela de rollback.
+4. Banco `denarius_gamefinanceiro` / Percona Server 5.7.44-48; usuário `denarius_financeirouser` associado com privilégios necessários; conexão, migrations e consulta do ranking sem window functions ainda devem ser validadas nesse host. A consulta não usa `ROW_NUMBER()` nem exige MySQL 8.
+5. PHP Web e CLI efetivos em PHP 8.4.1 ou superior, compatíveis entre si; extensões e `pdo_mysql` confirmados. O `composer.lock` atual exige `>=8.4.1` apesar de a versão base do Laravel aceitar PHP 8.3.
+6. Suporte a symlinks confirmado antes de adotar `current`; se indisponível, parar e aprovar uma topologia alternativa segura antes de publicar.
+7. Backup validado de banco, `.env` atual e arquivos da versão em produção. Definir responsável e janela de rollback.
 
 ## Preparar release local
 
@@ -30,14 +31,7 @@ git diff --check
 test -f public/build/manifest.json
 ```
 
-Somente depois dos testes, montar a release numa cópia/staging separado. Para gerar o ZIP sem `vendor/` (estratégia A, Composer no host):
-
-```bash
-zip -r denarius-release.zip app bootstrap config database public resources routes storage artisan composer.json composer.lock \
-  -x 'storage/logs/*' 'storage/framework/cache/data/*' 'storage/framework/sessions/*' 'storage/framework/views/*' 'database/*.sqlite*'
-```
-
-Para estratégia B, primeiro gerar `vendor/` de produção na cópia limpa, com PHP compatível, e incluí-lo no allowlist:
+Somente depois dos testes, montar a release numa cópia/staging separado. A estratégia aprovada neste contrato é incluir `vendor/` no ZIP, pois Composer no cPanel não foi confirmado e não será requisito de runtime:
 
 ```bash
 composer install --no-dev --prefer-dist --optimize-autoloader
@@ -47,14 +41,11 @@ zip -r denarius-release.zip app bootstrap config database public resources route
 
 Inspecionar o conteúdo com `unzip -l denarius-release.zip` antes do upload. O ZIP não deve conter `.env`, `.git`, `node_modules`, `tests`, dumps, credenciais ou backups. Não gerar o artefato final até a versão PHP-alvo estar confirmada.
 
-Definir o modo de dependências somente depois de verificar o host:
-
-- **A — Composer no cPanel:** instalar `vendor/` no servidor com Composer 2 e PHP CLI compatível. Fazer isso somente depois de colocar o `.env` privado correto e verificar o funcionamento do script pós-autoload do projeto.
-- **B — Composer indisponível:** gerar `vendor/` com `composer install --no-dev` em ambiente com a mesma versão/compatibilidade PHP do host e incluí-lo no ZIP. Se a versão de PHP Web/CLI do cPanel não estiver confirmada, não gerar nem publicar o pacote final.
+Gerar `vendor/` em ambiente controlado com PHP 8.4.1+ e o `composer.lock` aprovado. Composer no servidor é desconhecido, não deve ser pressuposto nem necessário. Se não houver ambiente de build compatível, não gerar nem publicar o pacote final.
 
 Node/pnpm não são requisito de runtime. `public/build/manifest.json` e os assets versionados em `public/build/assets/` devem estar no pacote.
 
-O ZIP deve conter a aplicação Laravel em allowlist: `app/`, `bootstrap/`, `config/`, `database/`, `public/`, `resources/`, `routes/`, `storage/` (estrutura necessária), `artisan`, `composer.json`, `composer.lock` e `vendor/` somente na estratégia B. Não incluir `.env`, `.env.*` preenchidos, `.git/`, `node_modules/`, `tests/`, caches de build locais, logs, dumps, backups, `auth.json` nem arquivos temporários. O arquivo `.env.example` é referência local, não configuração de servidor.
+O ZIP deve conter a aplicação Laravel em allowlist: `app/`, `bootstrap/`, `config/`, `database/`, `public/`, `resources/`, `routes/`, `storage/` (estrutura necessária), `vendor/`, `artisan`, `composer.json` e `composer.lock`. Não incluir `.env`, `.env.*` preenchidos, `.git/`, `node_modules/`, `tests/`, caches de build locais, logs, dumps, backups, `auth.json` nem arquivos temporários. O arquivo `.env.example` é referência local, não configuração de servidor.
 
 Revise o conteúdo do ZIP antes de enviar. O ZIP deve ser montado fora da árvore pública e nenhum segredo deve fazer parte dele.
 
@@ -86,14 +77,14 @@ Os exemplos usam marcadores, não caminhos de servidor reais. Substituir pelo ca
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://DOMINIO_CONFIRMADO
+APP_URL=https://gamedaoncinha.com
 APP_KEY=GERAR_NO_SERVIDOR
 LOG_LEVEL=warning
 DB_CONNECTION=mysql
-DB_HOST=HOST_MYSQL_DO_CPANEL
+DB_HOST=localhost
 DB_PORT=3306
-DB_DATABASE=NOME_REAL_DO_BANCO
-DB_USERNAME=USUARIO_REAL_DO_BANCO
+DB_DATABASE=denarius_gamefinanceiro
+DB_USERNAME=denarius_financeirouser
 DB_PASSWORD=SEGREDO_EXCLUSIVO
 SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
@@ -103,10 +94,10 @@ CACHE_STORE=database
 QUEUE_CONNECTION=sync
 ```
 
-Usar senha/nomes exclusivos, nunca valores locais do exemplo. `SESSION_SECURE_COOKIE=true` somente após HTTPS válido no domínio. Proteger o `.env` com proprietário correto e permissões restritivas compatíveis com o handler PHP; nunca colocá-lo sob Document Root.
+Usar senha exclusiva, nunca valores locais do exemplo. O domínio informado é `https://gamedaoncinha.com`; confirmar DNS e HTTPS válido antes de ativar `SESSION_SECURE_COOKIE=true`. O Document Root alvo é `/home1/denarius/gamefinanceiro.com/public`, mas não foi alterado nesta auditoria. Proteger o `.env` com proprietário correto e permissões restritivas compatíveis com o handler PHP; nunca colocá-lo sob Document Root.
 
 4. Criar a chave uma única vez se o `.env` novo não tiver chave: `<PHP_CLI> artisan key:generate`. Não substituir uma chave já em uso; isso invalida sessões e dados criptografados.
-5. Se Composer estiver disponível (estratégia A), executar `composer install --no-dev --prefer-dist --optimize-autoloader` na release depois de confirmar a versão do CLI e a conectividade. Na estratégia B, confirmar `vendor/` íntegro e compatível, sem rodar Composer no host.
+5. Confirmar `vendor/` de produção íntegro no pacote; a estratégia aprovada inclui `vendor/` e não executa Composer no host.
 6. Apontar o shared storage se a topologia aprovada usar symlink e ajustar apenas permissões necessárias para o usuário PHP poder gravar em `storage/` e `bootstrap/cache/`. Nunca usar `chmod 777`.
 7. Confirmar configuração carregada com `artisan about` e validar conexão/migrations:
 
@@ -138,7 +129,7 @@ Se algum comando falhar, não seguir com tráfego; diagnosticar e reverter a rel
 
 ## Smoke tests obrigatórios após publicação
 
-- `https://DOMINIO_CONFIRMADO/`, `/login`, `/register` e `/up` respondem sem stack trace.
+- `https://gamedaoncinha.com/`, `/login`, `/register` e `/up` respondem sem stack trace.
 - Visitante é redirecionado ao login em `/game` e `/ranking`; `/admin` não revela conteúdo.
 - Criar participante, entrar e sair; cadastro público não pode definir papel `admin`.
 - Administrador entra no Filament, cria/edita/desativa termo e consulta usuários/partidas; score, role e snapshots não são editáveis.
