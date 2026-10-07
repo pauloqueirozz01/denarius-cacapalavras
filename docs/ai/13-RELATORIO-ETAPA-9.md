@@ -91,7 +91,9 @@ O ranking conserva consulta, elegibilidade, posições e polling da Etapa 8. For
 
 - Branch: `feat/mascot-visual-polish`, criada sobre `feat/leaderboard-player-flow` e contendo integralmente a Etapa 8.
 - Commit funcional: `ea7e3e0 feat: add mascot and visual polish`.
-- O commit documental e o resultado de push serão informados na entrega final.
+- Correção de retorno das animações ao estado neutro: `eaadb52 fix: reset mascot motion after feedback`.
+- Relatório inicial: `c51c669 docs: add visual polish report`.
+- Branch publicada em `origin/feat/mascot-visual-polish`; não houve merge em `main`.
 - `main` não será alterada nem mesclada automaticamente.
 
 ## 13. Pendências
