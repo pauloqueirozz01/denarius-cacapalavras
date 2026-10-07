@@ -141,3 +141,11 @@
 - As migrations usam JSON básico e tipos/índices tradicionais compatíveis com 5.7.44; configuração de database já usa `utf8mb4_unicode_ci`. Nenhuma migration, collation, sessão, cache ou fila foi alterada.
 - Estratégia de release definida: `vendor/` no ZIP, gerado com PHP 8.4.1+; Node/pnpm só no build local, `public/build` incluído. Nenhuma alteração no host, migration de produção ou deploy executada.
 - Permanece `BLOCKED`: PHP CLI/patch/extensões, associação/grants, SSL/DNS, Document Root, permissões, symlinks, backup/rollback e validação direta da consulta/migrations no Percona real ainda não foram confirmados. Percona 5.7 está em fim de vida upstream e requer confirmação de suporte/patching do provedor.
+
+## 2026-10-07 — Configuração do `.env` de produção
+
+- Proprietário corrigiu o alvo: domínio `gamefinanceiro.com` (substitui `gamedaoncinha.com`) e usuário do banco `denarius_financeuser` (substitui `denarius_financeirouser`). Contrato, check-up, readiness, roteiro de deploy e contexto atualizados; as entradas anteriores deste diário ficam como histórico.
+- Primeira subida autorizada em HTTP, só para teste: `APP_URL=http://gamefinanceiro.com` e `SESSION_SECURE_COOKIE=false`. Após SSL válido, trocar para `https://` e `true` e recriar o config cache.
+- Criado `docs/deploy/PRODUCTION-ENV.md` com o template sem segredos e a justificativa de cada variável. `QUEUE_CONNECTION=sync` e `APP_LOCALE=pt_BR` são obrigatórios porque os defaults do código são `database` e `en`. O MVP não envia e-mail (`MAIL_MAILER=log`). `ADMIN_*` deve ser removido do `.env` antes do `config:cache`, para a senha não ficar em `bootstrap/cache/config.php`.
+- Ranking, migrations e suíte completa (198/1.327) validados num container local Percona Server 5.7.44-48; isso não substitui a validação no banco do cPanel.
+- Em 2026-10-07 o domínio retornava NXDOMAIN nos DNS públicos. Uma senha real do banco chegou a ser colocada no documento local antes do commit; foi trocada pelo placeholder e a recomendação é trocá-la no cPanel.

@@ -6,7 +6,7 @@ Legenda: `Verificado` significa evidência local disponível; `Pendente` signifi
 
 | Item | Valor encontrado | Status | Bloqueio? | Ação necessária |
 |---|---|---|---|---|
-| PHP Web | PHP 8.3 no sistema; PHP 8.4 disponível por domínio; patch/handler efetivo não confirmados | Parcial | Sim | Confirmar PHP 8.4.1+ aplicado a `gamedaoncinha.com` |
+| PHP Web | PHP 8.3 no sistema; PHP 8.4 disponível por domínio; patch/handler efetivo não confirmados | Parcial | Sim | Confirmar PHP 8.4.1+ aplicado a `gamefinanceiro.com` |
 | PHP CLI | Local: PHP 8.5.11 em `/opt/homebrew/Cellar/php/8.5.11/bin/php`; CLI/path do cPanel desconhecidos | Pendente | Sim | Registrar `php -v` e `which php`; confirmar CLI 8.4.1+ |
 | Compatibilidade Laravel/dependências | `composer.json` e lock exigem agora `^8.4.1`; Composer local em PHP 8.5.11 | Parcial | Sim | Conferir versão Web/CLI e extensões no host; local não prova PHP 8.4 |
 | Extensões PHP | Composer runtime local validou; lista requerida está no contrato da Etapa 11 | Pendente no host | Sim | Conferir extensões em PHP Web e CLI, especialmente PDO MySQL |
@@ -14,7 +14,7 @@ Legenda: `Verificado` significa evidência local disponível; `Pendente` signifi
 | Estratégia Composer/vendor | B definida: `vendor/` de produção será incluído no ZIP e gerado com PHP 8.4.1+ | Definida | Sim até artefato | Não gerar pacote final até runtime PHP ser confirmado e plataforma verificada |
 | Node/pnpm | Local: Node 26.8.2 e pnpm 11.15.1; não necessários em produção | Verificado local | Não | Compilar assets localmente e enviar `public/build` |
 | `public/build` | Gerado/validado pelo build local ao concluir a etapa | Verificado local | Não | Confirmar `public/build/manifest.json` no artefato de release |
-| Domínio/subdomínio | `gamedaoncinha.com` | Informado | Não | Confirmar cadastro e associação ao diretório no cPanel |
+| Domínio/subdomínio | `gamefinanceiro.com` | Informado | Não | Confirmar cadastro e associação ao diretório no cPanel |
 | DNS | Não verificado | Pendente | Sim | Confirmar resolução para o host antes do SSL |
 | Document Root | Atual `/home1/denarius/gamefinanceiro.com` (diretório informado como vazio); alvo `/home1/denarius/gamefinanceiro.com/public` | Pendente | Sim — crítico | Responsável do cPanel deve configurar o alvo `/public`; não alterar nesta auditoria |
 | SSL/HTTPS | Não verificado | Pendente | Sim | Confirmar AutoSSL/Let's Encrypt, cobertura do domínio e renovação antes de ativar cookie secure/HSTS |
@@ -22,7 +22,7 @@ Legenda: `Verificado` significa evidência local disponível; `Pendente` signifi
 | MySQL/Percona | Percona Server `5.7.44-48`, confirmado pelo proprietário; não confundir com a versão da biblioteca cliente | Informado | Sim para teste remoto | Validar conexão, migrações e consulta no servidor real antes do release; avaliar suporte de segurança EOL |
 | Recursos SQL usados | Ranking reescrito sem `ROW_NUMBER`, `OVER`, CTE ou window functions; usa `NOT EXISTS`, subqueries, comparações e `IS NULL` | Verificado no código | Não exige MySQL 8 | Executar a consulta real e `EXPLAIN` no Percona antes do release; suíte local usa SQLite |
 | Database | `denarius_gamefinanceiro`, host esperado `localhost`, porta `3306` | Informado | Sim | Validar conexão com credenciais privadas e banco selecionado |
-| Database user | `denarius_financeirouser` | Informado | Sim | Confirmar associação explícita ao database no cPanel |
+| Database user | `denarius_financeuser` | Informado | Sim | Confirmar associação explícita ao database no cPanel |
 | Database privileges | Associação e privilégios remotos não confirmados | Pendente | Sim | Confirmar usuário adicionado ao banco e privilégios DML/DDL necessários para migrações |
 | Charset/collation | Servidor informado: `utf8mb4` / `utf8mb4_unicode_ci`; configuração Laravel também usa `utf8mb4_unicode_ci` | Informado/compatível | Validar durante conexão | Não trocar collation; confirmar database e tabelas no host |
 | Migrations | 8 migrations locais em `Ran`; Percona remoto não migrado/testado | Pendente | Sim | Backup, `migrate:status`, revisão e então `php artisan migrate --force` somente na Etapa 11 |

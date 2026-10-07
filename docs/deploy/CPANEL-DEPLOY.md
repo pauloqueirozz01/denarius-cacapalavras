@@ -7,7 +7,7 @@ Este roteiro prepara a execução futura; nada abaixo foi executado em produçã
 1. Domínio/DNS criados, HTTPS válido e renovação automática confirmada.
 2. PHP Web e CLI usados pelo Artisan em PHP 8.4.1+ compatíveis com o `composer.lock`, com todas as extensões obrigatórias disponíveis.
 3. Document Root configurado diretamente para o diretório `public` da release. Nunca apontar para a raiz Laravel nem colocar `.env`, `vendor`, `.git`, `storage` ou `config` sob `public_html`.
-4. Banco `denarius_gamefinanceiro` / Percona Server 5.7.44-48; usuário `denarius_financeirouser` associado com privilégios necessários; conexão, migrations e consulta do ranking sem window functions ainda devem ser validadas nesse host. A consulta não usa `ROW_NUMBER()` nem exige MySQL 8.
+4. Banco `denarius_gamefinanceiro` / Percona Server 5.7.44-48; usuário `denarius_financeuser` associado com privilégios necessários; conexão, migrations e consulta do ranking sem window functions ainda devem ser validadas nesse host. A consulta não usa `ROW_NUMBER()` nem exige MySQL 8.
 5. PHP Web e CLI efetivos em PHP 8.4.1 ou superior, compatíveis entre si; extensões e `pdo_mysql` confirmados. O `composer.lock` atual exige `>=8.4.1` apesar de a versão base do Laravel aceitar PHP 8.3.
 6. Suporte a symlinks confirmado antes de adotar `current`; se indisponível, parar e aprovar uma topologia alternativa segura antes de publicar.
 7. Backup validado de banco, `.env` atual e arquivos da versão em produção. Definir responsável e janela de rollback.
@@ -77,24 +77,24 @@ Os exemplos usam marcadores, não caminhos de servidor reais. Substituir pelo ca
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://gamedaoncinha.com
+APP_URL=http://gamefinanceiro.com
 APP_KEY=GERAR_NO_SERVIDOR
 LOG_LEVEL=warning
 DB_CONNECTION=mysql
 DB_HOST=localhost
 DB_PORT=3306
 DB_DATABASE=denarius_gamefinanceiro
-DB_USERNAME=denarius_financeirouser
+DB_USERNAME=denarius_financeuser
 DB_PASSWORD=SEGREDO_EXCLUSIVO
 SESSION_DRIVER=database
-SESSION_SECURE_COOKIE=true
+SESSION_SECURE_COOKIE=false
 SESSION_HTTP_ONLY=true
 SESSION_SAME_SITE=lax
 CACHE_STORE=database
 QUEUE_CONNECTION=sync
 ```
 
-Usar senha exclusiva, nunca valores locais do exemplo. O domínio informado é `https://gamedaoncinha.com`; confirmar DNS e HTTPS válido antes de ativar `SESSION_SECURE_COOKIE=true`. O Document Root alvo é `/home1/denarius/gamefinanceiro.com/public`, mas não foi alterado nesta auditoria. Proteger o `.env` com proprietário correto e permissões restritivas compatíveis com o handler PHP; nunca colocá-lo sob Document Root.
+Usar senha exclusiva, nunca valores locais do exemplo. O domínio é `gamefinanceiro.com`. A primeira subida é em HTTP, só para teste, com `SESSION_SECURE_COOKIE=false`; após DNS e HTTPS válidos, trocar para `APP_URL=https://gamefinanceiro.com` e `SESSION_SECURE_COOKIE=true` e recriar o config cache. Template completo em [PRODUCTION-ENV.md](PRODUCTION-ENV.md). O Document Root alvo é `/home1/denarius/gamefinanceiro.com/public`, mas não foi alterado nesta auditoria. Proteger o `.env` com proprietário correto e permissões restritivas compatíveis com o handler PHP; nunca colocá-lo sob Document Root.
 
 4. Criar a chave uma única vez se o `.env` novo não tiver chave: `<PHP_CLI> artisan key:generate`. Não substituir uma chave já em uso; isso invalida sessões e dados criptografados.
 5. Confirmar `vendor/` de produção íntegro no pacote; a estratégia aprovada inclui `vendor/` e não executa Composer no host.
@@ -129,7 +129,7 @@ Se algum comando falhar, não seguir com tráfego; diagnosticar e reverter a rel
 
 ## Smoke tests obrigatórios após publicação
 
-- `https://gamedaoncinha.com/`, `/login`, `/register` e `/up` respondem sem stack trace.
+- `https://gamefinanceiro.com/`, `/login`, `/register` e `/up` respondem sem stack trace.
 - Visitante é redirecionado ao login em `/game` e `/ranking`; `/admin` não revela conteúdo.
 - Criar participante, entrar e sair; cadastro público não pode definir papel `admin`.
 - Administrador entra no Filament, cria/edita/desativa termo e consulta usuários/partidas; score, role e snapshots não são editáveis.

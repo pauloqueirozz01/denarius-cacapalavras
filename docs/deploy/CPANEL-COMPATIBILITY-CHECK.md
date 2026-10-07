@@ -7,13 +7,13 @@
 | Item | Valor informado | Situação nesta tarefa |
 |---|---|---|
 | Home | `/home1/denarius` | Informado; acesso não realizado |
-| Domínio | `gamedaoncinha.com` | Informado; DNS/SSL ainda não verificados |
+| Domínio | `gamefinanceiro.com` | Informado; DNS/SSL ainda não verificados |
 | Document Root atual | `/home1/denarius/gamefinanceiro.com` (diretório vazio, conforme informado) | Não alterado |
 | Document Root desejado | `/home1/denarius/gamefinanceiro.com/public` | Requisito crítico pendente de ação do cPanel |
 | PHP | 8.3 no sistema; PHP 8.4 disponível por domínio | Patch/handler e CLI ainda desconhecidos |
 | Banco | Percona Server `5.7.44-48` | Versão informada; sem conexão direta nesta tarefa |
 | Database | `denarius_gamefinanceiro` | Informado; conexão não validada |
-| Database user | `denarius_financeirouser` | Informado; associação/grants não confirmados |
+| Database user | `denarius_financeuser` | Informado; associação/grants não confirmados |
 | Host/porta | `localhost:3306` | Informado como esperado |
 | Charset/collation | `utf8mb4` / `utf8mb4_unicode_ci` | Informado; compatível com a configuração Laravel existente |
 

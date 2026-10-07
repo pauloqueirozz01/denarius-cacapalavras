@@ -18,7 +18,7 @@ Este contrato é a fonte de verdade para o agente que fará o deploy. Foi produz
 
 - PHP mínimo efetivo do lock: **8.4.1**. `composer.json` exige `^8.4.1`. PHP 8.3 e PHP 8.4.0 não são aceitos para esta release.
 - PHP alvo: **8.4.1 ou superior dentro do intervalo permitido**, tanto no handler Web quanto no CLI de Artisan. A versão/path efetivos do host ainda precisam ser confirmados.
-- Banco alvo: database `denarius_gamefinanceiro`, user `denarius_financeirouser`, host `localhost`, porta `3306` (valores informados pelo proprietário; associação/grants pendentes).
+- Banco alvo: database `denarius_gamefinanceiro`, user `denarius_financeuser`, host `localhost`, porta `3306` (valores informados pelo proprietário; associação/grants pendentes).
 - Engine/versão informada: **Percona Server 5.7.44-48**. Não usar a versão exibida por cliente como versão do servidor.
 - Ranking: seleção da melhor tentativa via anti-join `NOT EXISTS`; ordenação total e mesma regra de desempate. Sem `ROW_NUMBER`, `RANK`, `OVER`, CTE ou dependência de função de janela. Score lido do campo persistido.
 - Charset/collation: `utf8mb4` / `utf8mb4_unicode_ci`. Não mudar para collation `utf8mb4_0900_*`; nenhuma alteração necessária no código atual.
@@ -57,7 +57,7 @@ Só permanecem estes itens sem evidência direta:
 - Confirmar PHP Web efetivo e patch **8.4.1+**, handler e extensões selecionadas no domínio.
 - Confirmar PHP CLI/caminho `8.4.1+` e extensões CLI; executar `php -v`, `which php` e `php -m` no Terminal cPanel.
 - Confirmar as extensões do Laravel e Composer descritas em `CPANEL-COMPATIBILITY-CHECK.md`, em especial `pdo_mysql`.
-- Confirmar resolução DNS e certificado HTTPS válido/renovação para `gamedaoncinha.com`.
+- Confirmar resolução DNS e certificado HTTPS válido/renovação para `gamefinanceiro.com`.
 - Configurar/confirmar Document Root final exatamente em `/home1/denarius/gamefinanceiro.com/public`. O diretório raiz atual informado não termina em `/public`; não prosseguir enquanto isso não estiver resolvido.
 - Confirmar usuário do banco associado a `denarius_gamefinanceiro` e grants necessários para migrations/leitura/escrita.
 - Executar conexão, `SELECT VERSION()`, charset e consulta real/`EXPLAIN` do ranking no Percona 5.7.44-48; validar migrações em backup/staging seguro.
@@ -74,7 +74,7 @@ Composer no servidor não é pendência para instalação: o ZIP deve incluir `v
 - Excluir `.env`/segredos, `.git/`, `node_modules/`, testes, logs, caches de execução, dumps, backups, `auth.json` e arquivos temporários.
 - `public/build/manifest.json` precisa existir. Build local com `pnpm install --frozen-lockfile` e `pnpm build`; Node/pnpm não vão para o servidor.
 - Document Root: `/home1/denarius/gamefinanceiro.com/public`. Se releases/symlinks não estiverem disponíveis, interromper e obter aprovação de uma topologia privada segura; não improvisar paths.
-- O `.env` será criado/configurado no diretório privado do servidor com `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://gamedaoncinha.com`, DB host/port/name/user acima, segredo DB privado, sessão/cache database, queue sync, `SESSION_HTTP_ONLY=true`, `SESSION_SAME_SITE=lax` e `SESSION_SECURE_COOKIE=true` somente após SSL confirmado. Gerar APP_KEY exclusiva uma única vez; nunca substituir chave existente de uma instalação ativa.
+- O `.env` será criado/configurado no diretório privado do servidor com `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=http://gamefinanceiro.com` na fase de teste sem SSL (decisão do proprietário em 2026-10-07; trocar para `https://` após SSL), DB host/port/name/user acima, segredo DB privado, sessão/cache database, queue sync, `SESSION_HTTP_ONLY=true`, `SESSION_SAME_SITE=lax` e `SESSION_SECURE_COOKIE=true` somente após SSL confirmado. Gerar APP_KEY exclusiva uma única vez; nunca substituir chave existente de uma instalação ativa.
 
 ## Comandos autorizados de deploy
 
