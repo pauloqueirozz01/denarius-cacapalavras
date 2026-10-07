@@ -26,6 +26,13 @@
 - Sessões `ABANDONED` preservam os pontos das palavras já encontradas e nunca recebem bônus finais.
 - O score nunca é negativo nem pode diminuir, é persistido e sobrevive ao reload.
 - A regra usada por uma partida pertence ao seu snapshot e não muda com alterações posteriores da configuração global.
+- Somente usuários `participant` com ao menos uma sessão `COMPLETED` são elegíveis ao ranking.
+- Cada usuário aparece uma única vez, pela sua melhor sessão concluída, e `score` é lido do valor persistido.
+- A ordenação da melhor partida e do ranking global é: score decrescente, duração crescente, `finished_at` mais antigo e ID de sessão crescente.
+- Para registros concluídos legados com duração ou término nulos, valores conhecidos vêm primeiro; o ID final mantém ordem total determinística.
+- A posição individual representa sempre a melhor partida concluída, mesmo quando o resultado recém-finalizado não substitui o recorde.
+- Sessões `ACTIVE` e `ABANDONED` nunca entram no ranking, mesmo que tenham score.
+- Ler/atualizar ranking por polling não altera sessões nem cria partidas.
 - O cliente também não define grid, placements, palavras ou timestamps.
 - `total_words` corresponde ao número de snapshots de palavras e `found_words_count` permanece entre zero e o total.
 - A última palavra encontrada conclui automaticamente a sessão na mesma transação.
@@ -73,6 +80,8 @@ ACTIVE
 - O cronômetro visual pode avançar localmente, mas reload usa `started_at` e conclusão usa `duration_seconds` oficial.
 - Somente placements já encontrados podem gerar destaques permanentes no HTML; soluções pendentes não são expostas.
 - A interface apenas renderiza `GameSession.score` e o detalhamento devolvido pela action; nenhuma fórmula existe em Blade ou JavaScript.
+- Após concluir, o participante vê score, duração oficial, detalhamento reconstruído do snapshot histórico quando consistente, melhor posição e links para ranking e nova partida.
+- `/ranking` exige autenticação; o quadro periódico divulga somente nome, posição, score e duração, nunca email ou dados internos da sessão.
 
 ## Fórmula de pontuação
 

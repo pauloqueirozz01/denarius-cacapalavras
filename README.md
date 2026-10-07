@@ -57,8 +57,10 @@ pnpm audit --audit-level=high
 - [Relatório da Etapa 4 — Algoritmo de geração do caça-palavras](docs/ai/08-RELATORIO-ETAPA-4.md)
 - [Relatório da Etapa 5 — GameSession, snapshots e regras transacionais](docs/ai/09-RELATORIO-ETAPA-5.md)
 - [Relatório da Etapa 6 — Interface jogável desktop/mobile](docs/ai/10-RELATORIO-ETAPA-6.md)
+- [Relatório da Etapa 7 — Pontuação e recompensas](docs/ai/11-RELATORIO-ETAPA-7.md)
+- [Relatório da Etapa 8 — Ranking e fluxo do jogador](docs/ai/12-RELATORIO-ETAPA-8.md)
 - [Guia de contribuição para IA](AGENTS.md)
 
 ## Estado atual
 
-Etapa 7 concluída: autenticação, catálogo, motor, domínio persistente, interface jogável e pontuação autoritativa estão implementados. A próxima etapa implementará o ranking com scores persistidos.
+Etapa 8 concluída: autenticação, catálogo, motor, partidas, interface jogável, score autoritativo, ranking e fluxo de retorno ao jogo estão implementados. O roadmap consolidado segue com mascote e polimento visual na Etapa 9.

@@ -91,6 +91,19 @@ MySQL
 - Seleções repetidas retornam prêmio zero. Partidas abandonadas preservam pontos já conquistados, sem bônus finais.
 - `GameSession.score` é inteiro não negativo, não pode diminuir e permanece protegido contra mass assignment.
 
+## Ranking e jornada do jogador
+
+- `/ranking` exige autenticação e renderiza uma página Blade com um componente Livewire separado para o ranking dinâmico.
+- `RankingService` consulta somente sessões `COMPLETED` pertencentes a usuários `participant`; duas funções `ROW_NUMBER()` elegem a melhor sessão por usuário e ordenam o ranking.
+- A regra SQL aplica score decrescente, duração crescente, conclusão mais antiga e ID da sessão crescente; duração e conclusão nulas ficam explicitamente depois de valores conhecidos.
+- A consulta usa paginação limitada e executa uma consulta separada para a melhor posição do usuário, sem carregar o histórico completo para PHP.
+- O score vem sempre de `game_sessions.score`. Nenhuma fórmula é executada no ranking.
+- `LeaderboardBoard` atualiza sua área a cada cinco segundos com `wire:poll`; polling é somente leitura, não inicia partidas e respeita a redução automática de frequência em abas em segundo plano do Livewire.
+- A interface pública mostra nome, posição, score e duração. Emails, snapshots, placements e IDs de sessão não são renderizados.
+- `GameBoard` calcula o breakdown final apenas a partir do snapshot de pontuação da sessão e compara o resultado com o score persistido antes de exibi-lo. A posição mostrada é sempre a melhor posição concluída do participante.
+- Não foi mantido índice adicional: no `EXPLAIN FORMAT=JSON` do MySQL local, o plano preferiu o índice existente por status e término; a janela usa ordenação temporária e será reavaliada com volume de evento representativo.
+- Partidas anteriores permanecem imutáveis ao iniciar outra. O fluxo de start já serializa requests simultâneas e retoma sessão ativa existente.
+
 ## Serviços-alvo
 
 - `WordSearchGeneratorService` — implementado na Etapa 4.
@@ -98,7 +111,7 @@ MySQL
 - `FindGameSessionWordAction` — implementado na Etapa 5.
 - `AbandonGameSessionAction` — implementado na Etapa 5.
 - `ScoreCalculator` — implementado na Etapa 7.
-- `RankingService`
+- `RankingService` — implementado na Etapa 8.
 
 O frontend envia somente coordenadas da seleção. Palavras, relógio, conclusão e pontos permanecem sob autoridade do servidor.
 

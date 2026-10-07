@@ -87,3 +87,19 @@
 - Suíte completa: 169 testes PHP, 1.186 assertions e 5 testes JavaScript, sem falhas.
 - Pint, Composer validate, Vite build e auditorias Composer/pnpm passaram.
 - Próximo passo: implementar ranking geral consumindo somente partidas concluídas e scores persistidos.
+
+## 2026-10-06 — Etapa 8
+
+- Criados `RankingService`, `LeaderboardEntry` e o componente Livewire `LeaderboardBoard`; `/ranking` foi adicionado sob autenticação.
+- A consulta usa duas janelas SQL para selecionar uma partida vencedora por participante e ordenar posições sem carregar todo o histórico para PHP.
+- Somente usuários `participant` com partidas `COMPLETED` são elegíveis; sessões `ACTIVE` e `ABANDONED` não aparecem, mesmo com score alto.
+- Desempates usam score descendente, duração crescente, `finished_at` mais antigo e ID crescente. Duração/término nulos são ordenados explicitamente depois de valores conhecidos.
+- A pontuação vem sempre de `game_sessions.score`; posição individual usa o recorde concluído do participante, inclusive quando fora da página atual.
+- O ranking pagina até 50 posições por página, mostra Top 3, destaca o participante e atualiza a própria área a cada cinco segundos com `wire:poll`.
+- O resultado final agora exibe score, duração oficial, breakdown derivado e conferido com a configuração histórica, melhor posição, link para ranking e ação de jogar novamente.
+- Abandono não mostra colocação. Nova tentativa mantém registros anteriores, e requests repetidas retomam a sessão ativa existente.
+- O plano `EXPLAIN FORMAT=JSON` em MySQL local escolheu o índice já existente `(status, finished_at)`; um índice adicional experimental foi aplicado e revertido porque não foi selecionado. A janela global gera filesort/tabela temporária, a reavaliar com volume real de evento.
+- A consulta do serviço foi executada no MySQL e retornou zero participantes na base local atual; suíte automatizada executada em SQLite.
+- Suíte final: 186 testes PHPUnit, 1.266 assertions e 5 testes JavaScript, sem falhas.
+- A inspeção visual foi tentada pelo browser integrado, mas o ambiente recusou a ponte nativa; não foram alegadas medições ou screenshots.
+- Próximo passo: Etapa 9 — mascote/onça 8-bit, tutorial, feedback visual e polimento responsivo.
