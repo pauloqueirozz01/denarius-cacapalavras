@@ -20,6 +20,7 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - Motor backend do caça-palavras implementado com grid configurável, seleção de termos ativos, oito direções e geração determinística em testes.
 - Domínio persistente de partidas implementado com snapshots do grid e das palavras, estados explícitos, actions transacionais, autorização por proprietário e validação server-side das seleções.
 - Interface jogável Livewire implementada em `/game`, com início/retomada, grid persistido, Pointer Events para mouse/toque, progresso, cronômetro visual, tutorial, conclusão e abandono.
+- Pontuação autoritativa implementada com pontos por palavra, bônus de conclusão/velocidade, snapshot da fórmula por partida e exibição persistida na interface.
 
 ## Decisões
 
@@ -35,3 +36,4 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - O cliente informa somente coordenadas. Status, acertos, contadores, timestamps e duração permanecem sob autoridade do servidor.
 - Placements pendentes não são enviados ao navegador. Somente o grid, termos visíveis, progresso e células de palavras já encontradas compõem a interface.
 - O JavaScript calcula apenas a trajetória visual do gesto e o cronômetro de exibição; o backend continua validando seleção e duração oficial.
+- O score é atualizado na mesma transação do acerto. A fórmula é configurada no backend e congelada em `generation_config.scoring` para auditoria histórica.

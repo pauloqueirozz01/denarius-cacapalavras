@@ -61,4 +61,4 @@ pnpm audit --audit-level=high
 
 ## Estado atual
 
-Etapa 6 concluída: autenticação, catálogo, motor, domínio persistente e interface jogável Livewire para desktop/mobile estão implementados. A próxima etapa implementará pontuação e regras de recompensa.
+Etapa 7 concluída: autenticação, catálogo, motor, domínio persistente, interface jogável e pontuação autoritativa estão implementados. A próxima etapa implementará o ranking com scores persistidos.

@@ -73,3 +73,17 @@
 - Pint, Composer validate, Vite build e auditorias Composer/pnpm passaram.
 - A validação visual automatizada não pôde ser executada porque a conexão do navegador disponibilizado pelo ambiente foi recusada; a pendência foi documentada sem alegação de screenshots.
 - Próximo passo: implementar pontuação e regras de recompensa no backend.
+
+## 2026-10-06 — Etapa 7
+
+- Criados `ScoreCalculator` e `ScoreAward` para centralizar pontos por palavra, bônus de conclusão e faixas de velocidade.
+- `GameSession` passou a persistir `score` inteiro não negativo; o modelo impede redução e mantém proteção total contra mass assignment.
+- A migration aditiva também recalcula partidas pré-existentes e inclui a configuração de pontuação em seus snapshots.
+- Novas partidas congelam a fórmula em `generation_config.scoring`, preservando auditabilidade mesmo após alterações globais.
+- `FindGameSessionWordAction` atribui pontos dentro da transação e dos locks existentes; repetição retorna prêmio zero e conclusão recebe bônus uma única vez.
+- Partidas abandonadas mantêm os pontos acumulados, mas não recebem bônus de conclusão ou velocidade.
+- A interface Livewire exibe score persistido durante a partida, feedback por acerto e pontuação final/conquistada nos estados finais.
+- Migration, rollback e reaplicação foram validados no MySQL 8.4.
+- Suíte completa: 169 testes PHP, 1.186 assertions e 5 testes JavaScript, sem falhas.
+- Pint, Composer validate, Vite build e auditorias Composer/pnpm passaram.
+- Próximo passo: implementar ranking geral consumindo somente partidas concluídas e scores persistidos.

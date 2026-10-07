@@ -21,6 +21,11 @@
 - Uma seleção só é válida se suas coordenadas corresponderem exatamente a uma palavra da sessão, em qualquer dos dois sentidos.
 - Repetir uma seleção já encontrada é uma operação idempotente e não altera o contador.
 - O cliente nunca define pontuação, status, duração ou contadores.
+- Cada palavra gera pontos somente no primeiro acerto; repetição, seleção inválida e sessão final não alteram o score.
+- O bônus de conclusão e o bônus de velocidade são aplicados somente na transição única para `COMPLETED`.
+- Sessões `ABANDONED` preservam os pontos das palavras já encontradas e nunca recebem bônus finais.
+- O score nunca é negativo nem pode diminuir, é persistido e sobrevive ao reload.
+- A regra usada por uma partida pertence ao seu snapshot e não muda com alterações posteriores da configuração global.
 - O cliente também não define grid, placements, palavras ou timestamps.
 - `total_words` corresponde ao número de snapshots de palavras e `found_words_count` permanece entre zero e o total.
 - A última palavra encontrada conclui automaticamente a sessão na mesma transação.
@@ -67,6 +72,17 @@ ACTIVE
 - Termos são exibidos com `original_term`; `normalized_term` continua sendo a representação do grid.
 - O cronômetro visual pode avançar localmente, mas reload usa `started_at` e conclusão usa `duration_seconds` oficial.
 - Somente placements já encontrados podem gerar destaques permanentes no HTML; soluções pendentes não são expostas.
+- A interface apenas renderiza `GameSession.score` e o detalhamento devolvido pela action; nenhuma fórmula existe em Blade ou JavaScript.
+
+## Fórmula de pontuação
+
+- Palavra encontrada: 100 pontos.
+- Conclusão da partida: 500 pontos.
+- Conclusão em até 120 segundos: 500 pontos de velocidade.
+- Conclusão entre 121 e 180 segundos: 300 pontos de velocidade.
+- Conclusão entre 181 e 300 segundos: 150 pontos de velocidade.
+- Acima de 300 segundos: nenhum bônus de velocidade.
+- Máximo padrão: `total_words * 100 + 1.000`; com 10 palavras, 2.000 pontos.
 
 ## Dificuldade dos termos
 

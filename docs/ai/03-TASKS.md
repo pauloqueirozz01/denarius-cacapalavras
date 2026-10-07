@@ -12,6 +12,7 @@
 - [x] Implementar motor configurável do caça-palavras, oito direções, randomização controlável e contratos de resultado.
 - [x] Implementar sessões persistentes, snapshots auditáveis, máquina de estados, actions transacionais e antitrapaça básica.
 - [x] Implementar interface Livewire responsiva com Pointer Events, retomada, tutorial e estados completos da partida.
+- [x] Implementar pontuação autoritativa, bônus transacionais, snapshot da fórmula e integração com a interface.
 
 ## Próximas etapas
 
@@ -20,7 +21,7 @@
 - [x] Etapa 4: gerador determinístico, oito direções e testes de borda/colisão.
 - [x] Etapa 5: sessões, snapshots, actions transacionais e antitrapaça.
 - [x] Etapa 6: interface Livewire responsiva com mouse/touch e base acessível.
-- [ ] Etapa 7: pontuação centralizada e transparente.
+- [x] Etapa 7: pontuação centralizada e transparente.
 - [ ] Etapa 8: ranking indexado com `wire:poll`.
 - [ ] Etapa 9: componente de mascote com assets substituíveis.
 - [ ] Etapa 10: tutorial acessível em modal/drawer.

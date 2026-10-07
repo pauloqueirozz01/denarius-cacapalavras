@@ -81,13 +81,23 @@ MySQL
 - O layout Tailwind é mobile-first: grid fluido sem overflow horizontal, painel lateral em desktop e lista de termos abaixo no mobile/tablet.
 - JavaScript de seleção é coberto pelo runner nativo do Node; nenhuma dependência frontend adicional foi introduzida.
 
+## Pontuação e recompensas
+
+- `ScoreCalculator` é um serviço determinístico, sem dependência de HTTP, Livewire ou sessão web.
+- A fórmula padrão concede 100 pontos por palavra, 500 pela conclusão e bônus de velocidade de 500/300/150 pontos para conclusões em até 120/180/300 segundos.
+- `StartGameSessionAction` salva a configuração de pontuação em `generation_config.scoring`; mudanças futuras de configuração não alteram a regra de partidas já iniciadas.
+- `FindGameSessionWordAction` calcula e persiste o prêmio depois dos locks de sessão/palavra e dentro da mesma transação do acerto.
+- `ScoreAward` e `WordSelectionResult` explicitam pontos da palavra, bônus de conclusão, bônus de velocidade e total concedido.
+- Seleções repetidas retornam prêmio zero. Partidas abandonadas preservam pontos já conquistados, sem bônus finais.
+- `GameSession.score` é inteiro não negativo, não pode diminuir e permanece protegido contra mass assignment.
+
 ## Serviços-alvo
 
 - `WordSearchGeneratorService` — implementado na Etapa 4.
 - `StartGameSessionAction` — implementado na Etapa 5.
 - `FindGameSessionWordAction` — implementado na Etapa 5.
 - `AbandonGameSessionAction` — implementado na Etapa 5.
-- `ScoreCalculator`
+- `ScoreCalculator` — implementado na Etapa 7.
 - `RankingService`
 
 O frontend envia somente coordenadas da seleção. Palavras, relógio, conclusão e pontos permanecem sob autoridade do servidor.
