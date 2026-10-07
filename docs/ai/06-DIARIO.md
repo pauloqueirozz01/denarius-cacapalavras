@@ -103,3 +103,16 @@
 - Suíte final: 186 testes PHPUnit, 1.266 assertions e 5 testes JavaScript, sem falhas.
 - A inspeção visual foi tentada pelo browser integrado, mas o ambiente recusou a ponte nativa; não foram alegadas medições ou screenshots.
 - Próximo passo: Etapa 9 — mascote/onça 8-bit, tutorial, feedback visual e polimento responsivo.
+
+## 2026-10-06 — Etapa 9
+
+- Adicionado o componente Blade `x-mascot`, com estados `idle`, `correct`, `error`, `celebration`, `victory` e `abandoned`; os estados são apresentação, nunca regra de domínio.
+- Criado SVG pixel-art provisório e local de uma onça original. O componente procura arquivos WebP por estado e usa o SVG como fallback até a arte final aprovada estar disponível.
+- GameBoard integra o mascote na abertura, partida e resultado; acerto/erro/marco de progresso derivam do retorno/estado autoritativo já existente.
+- Tutorial atualizado com exemplo de seleção, direções, fórmula, bônus históricos, ranking e replay; os valores vêm do snapshot da sessão.
+- Refinados os cabeçalhos do ranking e jogo, foco visível, semântica do diálogo, fallback de altura do modal e suporte global a `prefers-reduced-motion`.
+- Não houve mudança nas actions, consultas, score, modelo de sessão, migrations ou dependências JavaScript.
+- Suíte completa: 187 testes PHPUnit, 1.280 assertions e 5 testes JavaScript, sem falhas.
+- Pint, Composer validate, Vite build, audits Composer/pnpm e `git diff --check` aprovados.
+- A inspeção visual foi tentada com o navegador integrado, mas a conexão foi recusada (`privileged native pipe bridge is not available; browser-client is not trusted`); sem screenshots ou teste físico alegados.
+- Próximo passo: Etapa 10 — Filament final, QA, auditoria de segurança e correções.

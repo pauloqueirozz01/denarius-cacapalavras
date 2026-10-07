@@ -59,8 +59,9 @@ pnpm audit --audit-level=high
 - [Relatório da Etapa 6 — Interface jogável desktop/mobile](docs/ai/10-RELATORIO-ETAPA-6.md)
 - [Relatório da Etapa 7 — Pontuação e recompensas](docs/ai/11-RELATORIO-ETAPA-7.md)
 - [Relatório da Etapa 8 — Ranking e fluxo do jogador](docs/ai/12-RELATORIO-ETAPA-8.md)
+- [Relatório da Etapa 9 — Mascote e polimento visual](docs/ai/13-RELATORIO-ETAPA-9.md)
 - [Guia de contribuição para IA](AGENTS.md)
 
 ## Estado atual
 
-Etapa 8 concluída: autenticação, catálogo, motor, partidas, interface jogável, score autoritativo, ranking e fluxo de retorno ao jogo estão implementados. O roadmap consolidado segue com mascote e polimento visual na Etapa 9.
+Etapa 9 concluída: autenticação, catálogo, motor, partidas, jogo, pontuação, ranking, fluxo de retorno, mascote substituível, tutorial refinado e polimento responsivo estão implementados. O roadmap consolidado segue com QA, Filament final e auditoria de segurança na Etapa 10.

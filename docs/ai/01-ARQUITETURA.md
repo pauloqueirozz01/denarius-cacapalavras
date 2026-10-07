@@ -104,6 +104,15 @@ MySQL
 - Não foi mantido índice adicional: no `EXPLAIN FORMAT=JSON` do MySQL local, o plano preferiu o índice existente por status e término; a janela usa ordenação temporária e será reavaliada com volume de evento representativo.
 - Partidas anteriores permanecem imutáveis ao iniciar outra. O fluxo de start já serializa requests simultâneas e retoma sessão ativa existente.
 
+## Apresentação e mascote
+
+- `x-mascot` centraliza caminhos, texto acessível, tamanho e estado visual do personagem; views não repetem caminhos de imagem.
+- Os estados `idle`, `correct`, `error`, `celebration`, `victory` e `abandoned` são apresentação derivada do resultado/estado já autorizado pelo backend. Não mudam score nem regras da partida.
+- Assets finais podem ser instalados por estado em `public/images/mascot/{idle,correct,error,celebration,victory,abandoned}.webp`. Enquanto ausentes, todos usam o SVG provisório local, sem chamada externa.
+- O tutorial usa a configuração de pontuação congelada na sessão, ou a configuração vigente antes de iniciar; nenhum score é calculado no navegador.
+- `resources/css/app.css` aplica microanimações curtas e desativa movimento/transições com `prefers-reduced-motion: reduce`.
+- Nenhuma biblioteca JS foi adicionada. Livewire continua orquestrando estados e JavaScript permanece restrito à seleção/relógio já existentes.
+
 ## Serviços-alvo
 
 - `WordSearchGeneratorService` — implementado na Etapa 4.

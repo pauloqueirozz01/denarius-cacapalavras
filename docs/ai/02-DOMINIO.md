@@ -33,6 +33,8 @@
 - A posição individual representa sempre a melhor partida concluída, mesmo quando o resultado recém-finalizado não substitui o recorde.
 - Sessões `ACTIVE` e `ABANDONED` nunca entram no ranking, mesmo que tenham score.
 - Ler/atualizar ranking por polling não altera sessões nem cria partidas.
+- O mascote é apenas apresentação: seus estados não são entrada do domínio e não alteram pontos, estado ou duração.
+- O tutorial explica a fórmula congelada no snapshot da sessão; sem sessão, usa a configuração padrão vigente.
 - O cliente também não define grid, placements, palavras ou timestamps.
 - `total_words` corresponde ao número de snapshots de palavras e `found_words_count` permanece entre zero e o total.
 - A última palavra encontrada conclui automaticamente a sessão na mesma transação.
@@ -82,6 +84,7 @@ ACTIVE
 - A interface apenas renderiza `GameSession.score` e o detalhamento devolvido pela action; nenhuma fórmula existe em Blade ou JavaScript.
 - Após concluir, o participante vê score, duração oficial, detalhamento reconstruído do snapshot histórico quando consistente, melhor posição e links para ranking e nova partida.
 - `/ranking` exige autenticação; o quadro periódico divulga somente nome, posição, score e duração, nunca email ou dados internos da sessão.
+- Feedback de acerto, erro, marco de progresso, vitória e abandono deriva do estado/resposta do backend; nenhum estado do mascote é aceito como prova de acerto.
 
 ## Fórmula de pontuação
 

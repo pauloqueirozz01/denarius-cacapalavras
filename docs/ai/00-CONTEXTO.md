@@ -22,6 +22,7 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - Interface jogável Livewire implementada em `/game`, com início/retomada, grid persistido, Pointer Events para mouse/toque, progresso, cronômetro visual, tutorial, conclusão e abandono.
 - Pontuação autoritativa implementada com pontos por palavra, bônus de conclusão/velocidade, snapshot da fórmula por partida e exibição persistida na interface.
 - Ranking autenticado implementado com melhor partida concluída por participante, posição individual, atualização Livewire periódica e retorno ao jogo após a conclusão.
+- Experiência visual refinada na Etapa 9 com componente reutilizável de mascote, estados visuais, tutorial com regras históricas da partida, microanimações e suporte a movimento reduzido.
 
 ## Decisões
 
@@ -40,4 +41,5 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - O score é atualizado na mesma transação do acerto. A fórmula é configurada no backend e congelada em `generation_config.scoring` para auditoria histórica.
 - O ranking considera apenas participantes e partidas `COMPLETED`; cada jogador aparece uma vez pela sua melhor partida e o score é lido diretamente do banco.
 - A classificação em `/ranking` atualiza sua própria área a cada 5 segundos por `wire:poll`; o resultado da partida mostra score, duração, breakdown histórico e melhor posição quando disponível.
-- Roadmap consolidado do MVP: Etapa 9 (mascote, tutorial e polimento visual), Etapa 10 (Filament final, QA e segurança) e Etapa 11 (deploy e documentação final).
+- `x-mascot` seleciona assets por estado (`idle.webp`, `correct.webp`, `error.webp`, `celebration.webp`, `victory.webp`, `abandoned.webp`) e usa um SVG provisório original como fallback; a arte final pode substituir os arquivos sem refatorar as views.
+- Roadmap consolidado do MVP: Etapa 9 concluída; Etapa 10 (Filament final, QA e segurança) e Etapa 11 (deploy e documentação final) seguem no backlog.
