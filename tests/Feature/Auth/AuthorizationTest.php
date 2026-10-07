@@ -17,6 +17,17 @@ class AuthorizationTest extends TestCase
         $response->assertRedirectToRoute('login');
     }
 
+    public function test_guest_is_redirected_to_login_from_ranking(): void
+    {
+        $this->get(route('ranking'))->assertRedirectToRoute('login');
+    }
+
+    public function test_guest_cannot_open_the_admin_panel(): void
+    {
+        $this->get(route('filament.admin.pages.dashboard'))
+            ->assertRedirectToRoute('filament.admin.auth.login');
+    }
+
     public function test_participant_can_access_game(): void
     {
         $participant = User::factory()->participant()->create();

@@ -30,6 +30,16 @@ class FinancialTermPolicyTest extends TestCase
         $this->assertFalse($policy->{$ability}($participant, ...$this->argumentsFor($ability, $term)));
     }
 
+    public function test_term_deletion_is_disabled_for_all_roles(): void
+    {
+        $admin = User::factory()->admin()->make();
+        $term = FinancialTerm::factory()->make();
+        $policy = new FinancialTermPolicy;
+
+        $this->assertFalse($policy->delete($admin, $term));
+        $this->assertFalse($policy->deleteAny($admin));
+    }
+
     /**
      * @return array<string, array{string}>
      */
@@ -40,7 +50,6 @@ class FinancialTermPolicyTest extends TestCase
             'view' => ['view'],
             'create' => ['create'],
             'update' => ['update'],
-            'delete' => ['delete'],
         ];
     }
 
@@ -49,6 +58,6 @@ class FinancialTermPolicyTest extends TestCase
      */
     private function argumentsFor(string $ability, FinancialTerm $term): array
     {
-        return in_array($ability, ['view', 'update', 'delete'], true) ? [$term] : [];
+        return in_array($ability, ['view', 'update'], true) ? [$term] : [];
     }
 }

@@ -44,7 +44,12 @@ class FinancialTermPolicy
      */
     public function delete(User $user, FinancialTerm $financialTerm): bool
     {
-        return $user->isAdmin();
+        return false;
+    }
+
+    public function deleteAny(User $user): bool
+    {
+        return false;
     }
 
     /**
