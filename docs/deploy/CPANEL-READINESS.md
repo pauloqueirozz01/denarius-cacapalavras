@@ -42,7 +42,7 @@ Legenda: `Verificado` significa evidência local disponível; `Pendente` signifi
 | Vite/Node no servidor | Não é necessário | Verificado em arquitetura | Não | Não instalar Node/pnpm em produção; subir artefato `public/build` |
 | Backup | Nenhum backup remoto confirmado | Pendente | Sim | Definir backup do banco, `.env` privado e arquivos antes de migration/release |
 | Rollback | Nenhum procedimento remoto testado | Pendente | Sim | Preservar release anterior/backup; preparar reversão de código e plano de banco compatível |
-| Release/ZIP | ZIP ainda não criado; incluir `vendor/` (estratégia B) e `public/build/manifest.json` | Definida | Sim | Gerar somente após confirmar PHP Web/CLI 8.4.1+; excluir segredos e artefatos locais |
+| Release/ZIP | `dist/denarius-cacapalavras-be63805a.zip` gerado de `be63805`, com `vendor/` produzido em PHP 8.4.26 e `public/build/manifest.json`; SHA-256 `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5` | Pronto | Não | Conferir o SHA-256 no servidor antes de extrair; ver `ETAPA-11-CONTRACT.md` |
 | Smoke tests | Checklist preparado no roteiro de deploy; produção indisponível | Pendente | Sim | Executar checks de rota, autenticação, jogo, score, ranking e admin após deploy |
 
 ## Valores locais medidos — não extrapolar para o cPanel

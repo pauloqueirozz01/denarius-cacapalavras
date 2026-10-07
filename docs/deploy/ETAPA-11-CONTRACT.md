@@ -6,18 +6,20 @@ Este contrato é a fonte de verdade para o agente que fará o deploy. Foi produz
 
 - Branch de trabalho: `fix/cpanel-compatibility`.
 - Commit funcional aprovado: `f2f3c48 fix: ensure cpanel production compatibility`.
-- SHA: `f2f3c48` (código/runtime); o commit documental desta passagem só atualiza instruções e contrato. Etapa 11 deve verificar e usar a ponta publicada da branch `fix/cpanel-compatibility`.
-- Testes: **198 PHPUnit / 1.327 assertions**, 0 falhas; baseline anterior 197 / 1.325.
+- SHA: `f2f3c48` (código/runtime). Os commits posteriores só alteram documentação.
+- **Pacote de produção gerado a partir de `be63805a6c7f4202553a3cf19510efe773c2f490`** (`be63805`). Ver seção "Pacote de produção".
+- Testes em `be63805`: **198 PHPUnit / 1.327 assertions**, 0 falhas; baseline anterior 197 / 1.325.
 - JavaScript: **5 testes aprovados**, 0 falhas.
-- Build: `pnpm build` aprovado e `public/build/manifest.json` presente. O agente da Etapa 11 ainda deve revalidar após checkout.
-- Pint, Composer validate/platform e Composer/pnpm audits passaram no ambiente local PHP 8.5.11.
-- O ranking passou na suíte SQLite; Percona real, PHP 8.4.1 real e host ainda não foram testados. A readiness segue **BLOCKED** até fechar as pendências abaixo.
+- Build: `pnpm install --frozen-lockfile` e `pnpm build` aprovados; `public/build/manifest.json` presente e incluído no pacote.
+- Pint, `composer validate --strict`, `composer audit --locked`, `pnpm audit --audit-level=high` e `git diff --check` aprovados.
+- `vendor/` gerado e `composer check-platform-reqs` aprovado em **PHP 8.4.26** (container Linux `php:8.4-cli`).
+- Ranking, migrations e suíte completa validados num container local **Percona Server 5.7.44-48**; o banco do cPanel e o host ainda não foram testados. A readiness segue **BLOCKED** até fechar as pendências abaixo.
 - A branch é separada de `main`; não fazer merge automático.
 
 ## Compatibilidade
 
 - PHP mínimo efetivo do lock: **8.4.1**. `composer.json` exige `^8.4.1`. PHP 8.3 e PHP 8.4.0 não são aceitos para esta release.
-- PHP alvo: **8.4.1 ou superior dentro do intervalo permitido**, tanto no handler Web quanto no CLI de Artisan. A versão/path efetivos do host ainda precisam ser confirmados.
+- PHP alvo: **8.4** (`ea-php84`, confirmado pelo proprietário para o domínio), patch 8.4.1 ou superior, tanto no handler Web quanto no CLI de Artisan. O patch e o path do CLI ainda precisam ser confirmados no host. O pacote foi validado em PHP 8.4.26.
 - Banco alvo: database `denarius_gamefinanceiro`, user `denarius_financeuser`, host `localhost`, porta `3306` (valores informados pelo proprietário; associação/grants pendentes).
 - Engine/versão informada: **Percona Server 5.7.44-48**. Não usar a versão exibida por cliente como versão do servidor.
 - Ranking: seleção da melhor tentativa via anti-join `NOT EXISTS`; ordenação total e mesma regra de desempate. Sem `ROW_NUMBER`, `RANK`, `OVER`, CTE ou dependência de função de janela. Score lido do campo persistido.
@@ -54,11 +56,11 @@ Não há migration ou alteração de schema pendente decorrente deste check-up.
 
 Só permanecem estes itens sem evidência direta:
 
-- Confirmar PHP Web efetivo e patch **8.4.1+**, handler e extensões selecionadas no domínio.
+- Confirmar o patch **8.4.1+** do PHP Web `ea-php84` e as extensões selecionadas no domínio.
 - Confirmar PHP CLI/caminho `8.4.1+` e extensões CLI; executar `php -v`, `which php` e `php -m` no Terminal cPanel.
 - Confirmar as extensões do Laravel e Composer descritas em `CPANEL-COMPATIBILITY-CHECK.md`, em especial `pdo_mysql`.
-- Confirmar resolução DNS e certificado HTTPS válido/renovação para `gamefinanceiro.com`.
-- Configurar/confirmar Document Root final exatamente em `/home1/denarius/gamefinanceiro.com/public`. O diretório raiz atual informado não termina em `/public`; não prosseguir enquanto isso não estiver resolvido.
+- Confirmar a resolução DNS de `gamefinanceiro.com`. A primeira subida é em HTTP; certificado HTTPS válido é pendência para a troca de `APP_URL` e `SESSION_SECURE_COOKIE`, não para o teste inicial.
+- Document Root informado pelo proprietário como já configurado em `/home1/denarius/gamefinanceiro.com/public`; conferir no cPanel antes de extrair o pacote.
 - Confirmar usuário do banco associado a `denarius_gamefinanceiro` e grants necessários para migrations/leitura/escrita.
 - Executar conexão, `SELECT VERSION()`, charset e consulta real/`EXPLAIN` do ranking no Percona 5.7.44-48; validar migrações em backup/staging seguro.
 - Confirmar permissões mínimas de escrita em `storage/` e `bootstrap/cache/`, suporte a symlink para a topologia escolhida e caminho seguro fora do Document Root.
@@ -67,9 +69,38 @@ Só permanecem estes itens sem evidência direta:
 
 Composer no servidor não é pendência para instalação: o ZIP deve incluir `vendor/` de produção. A disponibilidade do binário pode ser registrada, mas não pode mudar a estratégia sem nova aprovação.
 
+## Pacote de produção
+
+| Item | Valor |
+|---|---|
+| Arquivo | `dist/denarius-cacapalavras-be63805a.zip` (fora do Git; `/dist` está no `.gitignore`) |
+| Tamanho | 21.078.430 bytes (21 MB); 14.457 arquivos |
+| SHA-256 | `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5` |
+| Branch / commit | `fix/cpanel-compatibility` / `be63805a6c7f4202553a3cf19510efe773c2f490` |
+| Destino da extração | `/home1/denarius/gamefinanceiro.com` (conteúdo na raiz do ZIP: `artisan`, `app/`, `public/`, `vendor/`…) |
+| `vendor/` | Incluído; `composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction` em PHP 8.4.26; sem dependências de desenvolvimento; `platform_check.php` exige PHP 8.4.1+ |
+| `public/build` | Incluído, com `manifest.json`; assets do Filament publicados em `public/css`, `public/js` e `public/fonts` |
+| Excluídos | `.env` e `.env.example`, `.git/`, `.github/`, `node_modules/`, `tests/`, `phpunit.xml`, `docs/`, configs de IA/ferramentas, logs, dumps, `.DS_Store` |
+| Caches | Sem `bootstrap/cache/config.php`, rotas ou views compiladas; só `packages.php`/`services.php` do install sem dev |
+| Secrets | Varredura sem `APP_KEY=base64:`, senhas, tokens ou chaves privadas |
+
+Como o pacote foi gerado (sem tocar no servidor):
+
+```bash
+git archive be63805 | tar -x -C dist/stage-be63805a   # checkout limpo, sem .env/.git/node_modules
+cp -R public/build dist/stage-be63805a/public/        # após pnpm install --frozen-lockfile && pnpm build
+# remover do staging: tests, phpunit.xml, docs, .env.example, configs de ferramentas e de Node
+docker run --rm -v "$PWD/dist/stage-be63805a:/app" -w /app denarius-php84-build \
+  sh -c 'composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction && composer check-platform-reqs --no-dev'
+(cd dist/stage-be63805a && zip -qr -X ../denarius-cacapalavras-be63805a.zip .)
+shasum -a 256 dist/denarius-cacapalavras-be63805a.zip
+```
+
+A imagem `denarius-php84-build` é `php:8.4-cli` com `intl`, `zip` e `pdo_mysql` e o Composer 2; o container é descartado com `--rm`. Antes de extrair no servidor, conferir o SHA-256 do arquivo enviado (`sha256sum denarius-cacapalavras-be63805a.zip`). Se não bater, abortar.
+
 ## Estratégia de release
 
-- **Estratégia final: vendor incluído no ZIP.** Gerar `vendor/` sem dependências de desenvolvimento usando o lock aprovado e PHP 8.4.1+ em ambiente de build controlado: `composer install --no-dev --prefer-dist --optimize-autoloader`.
+- **Estratégia final: vendor incluído no ZIP.** O pacote acima já contém `vendor/` gerado em PHP 8.4.26; não rodar Composer no servidor.
 - O ZIP inclui `app/`, `bootstrap/`, `config/`, `database/`, `public/` (com `build/manifest.json` e assets compilados), `resources/`, `routes/`, estrutura necessária de `storage/`, `vendor/`, `artisan`, `composer.json` e `composer.lock`.
 - Excluir `.env`/segredos, `.git/`, `node_modules/`, testes, logs, caches de execução, dumps, backups, `auth.json` e arquivos temporários.
 - `public/build/manifest.json` precisa existir. Build local com `pnpm install --frozen-lockfile` e `pnpm build`; Node/pnpm não vão para o servidor.
@@ -81,11 +112,8 @@ Composer no servidor não é pendência para instalação: o ZIP deve incluir `v
 Estes comandos são para a Etapa 11, após autorização explícita, backup confirmado e check dos bloqueios; não foram executados neste check-up:
 
 ```bash
-# build fora do servidor, em PHP 8.4.1+ e checkout limpo
-composer install --no-dev --prefer-dist --optimize-autoloader
-pnpm install --frozen-lockfile
-pnpm build
-test -f public/build/manifest.json
+# no cPanel: validar o pacote enviado e extrair em /home1/denarius/gamefinanceiro.com
+sha256sum denarius-cacapalavras-be63805a.zip   # deve ser 44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5
 
 # no cPanel, sempre com o binário PHP 8.4.1+ confirmado
 <PHP84_CLI> artisan about
@@ -107,7 +135,8 @@ Parar e não apontar tráfego se qualquer item ocorrer:
 
 - PHP Web ou CLI abaixo de 8.4.1, incompatível ou sem `pdo_mysql`/extensão obrigatória.
 - Document Root não puder apontar ao `public/` seguro indicado; `.env`/código privado ficaria acessível pela web.
-- HTTPS válido não estiver pronto antes de ativar cookie `Secure`.
+- HTTPS válido não estiver pronto antes de ativar cookie `Secure` (na fase HTTP, `SESSION_SECURE_COOKIE=false`).
+- SHA-256 do ZIP no servidor diferente de `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`.
 - Banco não for o Percona 5.7.44-48 informado, conexão/grants falharem, charset não for utf8mb4, consulta do ranking ou migration falhar.
 - Não houver backup validado e rollback viável; storage/cache não forem graváveis com permissões mínimas.
 - ZIP não contiver `vendor/` compatível e `public/build/manifest.json`, ou contiver segredos, `.git`, `node_modules`, dumps/backups.

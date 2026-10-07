@@ -149,3 +149,12 @@
 - Criado `docs/deploy/PRODUCTION-ENV.md` com o template sem segredos e a justificativa de cada variável. `QUEUE_CONNECTION=sync` e `APP_LOCALE=pt_BR` são obrigatórios porque os defaults do código são `database` e `en`. O MVP não envia e-mail (`MAIL_MAILER=log`). `ADMIN_*` deve ser removido do `.env` antes do `config:cache`, para a senha não ficar em `bootstrap/cache/config.php`.
 - Ranking, migrations e suíte completa (198/1.327) validados num container local Percona Server 5.7.44-48; isso não substitui a validação no banco do cPanel.
 - Em 2026-10-07 o domínio retornava NXDOMAIN nos DNS públicos. Uma senha real do banco chegou a ser colocada no documento local antes do commit; foi trocada pelo placeholder e a recomendação é trocá-la no cPanel.
+
+## 2026-10-07 — Pacote de produção cPanel
+
+- Auditoria SQL repetida: sem window functions, CTE ou collation `utf8mb4_0900_*`; ranking segue no anti-join `NOT EXISTS`, sem mudança de regra.
+- Validações em `be63805`: PHPUnit 198/1.327, JS 5/5, Pint, `composer validate --strict`, `composer audit --locked`, `pnpm audit --audit-level=high` e `git diff --check` aprovados.
+- `vendor/` de produção gerado num container `php:8.4-cli` (PHP 8.4.26, com `intl`, `zip` e `pdo_mysql`) com `composer install --no-dev --prefer-dist --optimize-autoloader`; `composer check-platform-reqs --no-dev` aprovado. O container foi descartado com `--rm`.
+- Pacote `dist/denarius-cacapalavras-be63805a.zip` (21.078.430 bytes, SHA-256 `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`), com o conteúdo na raiz para extração em `/home1/denarius/gamefinanceiro.com`. Sem `.env`/`.env.example`, `.git`, `node_modules`, testes, docs, logs, caches compilados ou secrets.
+- Duas sessões de agente trabalharam em paralelo nesta etapa. O ZIP foi regenerado uma vez para excluir `.env.example`, que tinha a senha de desenvolvimento local; vale só o checksum acima.
+- Nenhum deploy, migration de produção, acesso ao cPanel, DNS, SSL ou Document Root foi executado. A readiness do deploy continua `BLOCKED` pelas pendências de infraestrutura do contrato.

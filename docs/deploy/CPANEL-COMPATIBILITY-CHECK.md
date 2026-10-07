@@ -1,6 +1,6 @@
 # Check-up de compatibilidade cPanel — pré-Etapa 11
 
-**Resultado:** código ajustado para o ambiente declarado; **readiness do deploy: BLOCKED** até que o responsável do cPanel confirme os itens de infraestrutura pendentes e haja validação direta no banco de destino. Este check-up não é a Etapa 11. Nenhum deploy, migration, alteração de DNS/SSL/Document Root ou escrita remota foi executada.
+**Resultado:** código ajustado para o ambiente declarado e **pacote de produção READY**: `dist/denarius-cacapalavras-be63805a.zip`, SHA-256 `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`, detalhado em `ETAPA-11-CONTRACT.md`. A **readiness do deploy continua BLOCKED** até que o responsável do cPanel confirme os itens de infraestrutura pendentes e haja validação direta no banco de destino. Este check-up não é a Etapa 11. Nenhum deploy, migration, alteração de DNS/SSL/Document Root ou escrita remota foi executada.
 
 ## Ambiente alvo informado pelo proprietário
 
@@ -8,9 +8,10 @@
 |---|---|---|
 | Home | `/home1/denarius` | Informado; acesso não realizado |
 | Domínio | `gamefinanceiro.com` | Informado; DNS/SSL ainda não verificados |
-| Document Root atual | `/home1/denarius/gamefinanceiro.com` (diretório vazio, conforme informado) | Não alterado |
-| Document Root desejado | `/home1/denarius/gamefinanceiro.com/public` | Requisito crítico pendente de ação do cPanel |
-| PHP | 8.3 no sistema; PHP 8.4 disponível por domínio | Patch/handler e CLI ainda desconhecidos |
+| Diretório da aplicação | `/home1/denarius/gamefinanceiro.com` | Destino da extração do ZIP |
+| Document Root | `/home1/denarius/gamefinanceiro.com/public` | Informado como já configurado; não alterado |
+| PHP Web | PHP 8.4 (`ea-php84`) | Patch e CLI ainda não verificados no host |
+| SSL | Ainda indisponível | Primeira subida em HTTP |
 | Banco | Percona Server `5.7.44-48` | Versão informada; sem conexão direta nesta tarefa |
 | Database | `denarius_gamefinanceiro` | Informado; conexão não validada |
 | Database user | `denarius_financeuser` | Informado; associação/grants não confirmados |
@@ -27,11 +28,11 @@ Antes, `RankingService` usava duas funções `ROW_NUMBER() OVER`, não disponív
 
 A ordem continua idêntica: somente sessão `COMPLETED` e usuário `participant`; por participante, maior score, menor duração, término mais antigo e menor ID. Valores nulos de duração/término ficam depois dos conhecidos. O desempate por ID ganhou teste próprio com IDs inseridos fora da ordem de criação.
 
-A consulta usa apenas Query Builder, `NOT EXISTS`, subquery derivada, igualdade/ordenação e `IS NULL`; não usa window functions, CTEs, parâmetros dinâmicos em SQL cru nem função JSON avançada. Foi validada pela suíte em SQLite, mas **a query real e o `EXPLAIN` ainda precisam ser executados no Percona 5.7.44-48** antes do release. O container MySQL 5.7 não estava disponível localmente; a instância Docker ativa é MySQL 8.4 e o Docker socket não permitiu inspeção adicional. Não foi inventada evidência de teste em Percona.
+A consulta usa apenas Query Builder, `NOT EXISTS`, subquery derivada, igualdade/ordenação e `IS NULL`; não usa window functions, CTEs, parâmetros dinâmicos em SQL cru nem função JSON avançada. Depois, a suíte completa, as migrations e o `EXPLAIN` das consultas reais do ranking foram executados num container local `percona/percona-server:5.7.44` (Percona Server 5.7.44-48), sem window functions nem CTE no log de queries. Isso não substitui a validação no banco do cPanel, que continua pendente para a Etapa 11.
 
 ### PHP e Composer
 
-O `composer.lock` contém pacotes de runtime com requisito `PHP >=8.4.1`. A exigência raiz anterior `^8.3` permitiria uma instalação que falharia ao validar o lock. `composer.json` e a plataforma raiz no lock foram alinhados para `^8.4.1`, sem atualizar versões de dependências. Nenhum pacote exige exclusivamente PHP 8.5; o PHP local 8.5.11 satisfaz o lock. Não há binário PHP 8.4/8.3 local, então não houve execução real nesses runtimes. A versão efetiva do handler cPanel precisa ser 8.4.1 ou superior.
+O `composer.lock` contém pacotes de runtime com requisito `PHP >=8.4.1`. A exigência raiz anterior `^8.3` permitiria uma instalação que falharia ao validar o lock. `composer.json` e a plataforma raiz no lock foram alinhados para `^8.4.1`, sem atualizar versões de dependências. Nenhum pacote exige exclusivamente PHP 8.5. O `vendor/` de produção foi gerado num container Linux PHP 8.4.26 com `composer install --no-dev`, e `composer check-platform-reqs --no-dev` passou em todas as extensões. O requisito não pode voltar para `^8.3`, porque o lock exige 8.4.1+. A versão efetiva do handler cPanel precisa ser 8.4.1 ou superior.
 
 Laravel 13 documenta PHP >=8.3 como base do framework, mas o lock concreto deste projeto eleva o mínimo efetivo. Requisito Laravel de referência: [documentação oficial de deployment Laravel 13](https://laravel.com/docs/13.x/deployment).
 
@@ -45,7 +46,7 @@ Laravel 13 documenta PHP >=8.3 como base do framework, mas o lock concreto deste
 
 ## PHP e extensões
 
-O único runtime local testado é PHP CLI 8.5.11. `composer check-platform-reqs` passou nesse runtime; não representa PHP Web/CLI cPanel.
+Runtimes testados: PHP CLI 8.5.11 local (suíte de testes) e PHP 8.4.26 em container Linux (`vendor/` de produção e `check-platform-reqs`). Nenhum dos dois representa o PHP Web/CLI do cPanel.
 
 Extensões de servidor requeridas pelo Laravel 13: `Ctype`, `cURL`, `DOM`, `Fileinfo`, `Filter`, `Hash`, `Mbstring`, `OpenSSL`, `PCRE`, `PDO`, `Session`, `Tokenizer` e `XML`; para este app com `DB_CONNECTION=mysql`, também é obrigatório o driver `PDO MySQL` (`pdo_mysql`).
 
@@ -83,9 +84,10 @@ Nenhuma migration, configuração de sessão/cache/queue, collation, regra de sc
 | Audits | `composer audit --locked` e `pnpm audit --audit-level=high` sem vulnerabilidades |
 | pnpm lock | `pnpm install --frozen-lockfile` concluído sem alteração de dependências/lock |
 | Diff | `git diff --check` aprovado |
-| MySQL/Percona | Sem teste direto no Percona 5.7; ambiente disponível localmente é SQLite para testes e MySQL 8.4 no Docker |
-| PHP 8.4.1 | Não instalado localmente; verificado estaticamente pelo requisito das dependências lockadas |
+| MySQL/Percona | Suíte completa, migrations e `EXPLAIN` do ranking aprovados num container local Percona Server 5.7.44-48; banco do cPanel não testado |
+| PHP 8.4 | `vendor/` gerado e `composer check-platform-reqs --no-dev` aprovado em PHP 8.4.26 (container Linux) |
+| Pacote | `dist/denarius-cacapalavras-be63805a.zip`, 21.078.430 bytes, SHA-256 `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`; `unzip -t` sem erros; arquivos obrigatórios presentes; sem `.env*`, `.git`, `node_modules`, testes, logs ou secrets |
 | Migrations | 8 status `Ran` no banco local MySQL 8.4; nenhuma migration executada no cPanel |
 | Estado cPanel | Sem sessão/acesso remoto; pendências no readiness e contrato |
 
-As validações finais da branch e os SHAs serão registrados no commit documental e no relatório entregue ao proprietário. O resultado do deploy permanece **BLOCKED**, pois o PHP 8.4.1+ real, o PHP CLI, Document Root `/public`, SSL/DNS, grants, permissões, backups e a consulta/migrations no banco remoto não foram confirmados.
+O pacote foi gerado de `be63805a6c7f4202553a3cf19510efe773c2f490`. O resultado do deploy permanece **BLOCKED**, pois o patch real do PHP Web 8.4, o PHP CLI, DNS, grants, permissões, backups e a consulta/migrations no banco remoto não foram confirmados.
