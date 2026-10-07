@@ -16,6 +16,8 @@ use App\Exceptions\WordSearchGenerationException;
 use App\Models\GameSession;
 use App\Models\GameSessionWord;
 use App\Models\User;
+use App\Services\RankingService;
+use App\Services\ScoreCalculator;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -186,6 +188,9 @@ class GameBoard extends Component
         $session = $this->displaySessionFor($user);
         $words = collect();
         $foundCells = [];
+        $rankingPosition = null;
+        $rankingUnavailable = false;
+        $scoreBreakdown = null;
 
         if ($session !== null) {
             Gate::forUser($user)->authorize('view', $session);
@@ -199,12 +204,43 @@ class GameBoard extends Component
                     $foundCells[$cell] = true;
                 }
             }
+
+            if ($session->status === GameSessionStatus::Completed) {
+                try {
+                    $rankingPosition = app(RankingService::class)
+                        ->positionForCompletedSession((int) $session->getKey());
+                } catch (Throwable $exception) {
+                    report($exception);
+                    $rankingUnavailable = true;
+                }
+
+                $scoringSnapshot = $session->generation_config['scoring'] ?? null;
+
+                if (is_array($scoringSnapshot) && $session->duration_seconds !== null) {
+                    try {
+                        $scoreBreakdown = (new ScoreCalculator($scoringSnapshot))->completedBreakdown(
+                            foundWordsCount: $session->found_words_count,
+                            durationSeconds: $session->duration_seconds,
+                        );
+
+                        if ($scoreBreakdown->total() !== $session->score) {
+                            $scoreBreakdown = null;
+                        }
+                    } catch (Throwable $exception) {
+                        report($exception);
+                        $scoreBreakdown = null;
+                    }
+                }
+            }
         }
 
         return view('livewire.game.game-board', [
             'session' => $session,
             'words' => $words,
             'foundCells' => $foundCells,
+            'rankingPosition' => $rankingPosition,
+            'rankingUnavailable' => $rankingUnavailable,
+            'scoreBreakdown' => $scoreBreakdown,
         ]);
     }
 

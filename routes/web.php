@@ -23,5 +23,9 @@ Route::middleware('auth')->group(function (): void {
         return view('game');
     })->middleware('throttle:120,1')->name('game');
 
+    Route::get('/ranking', function () {
+        return view('ranking');
+    })->middleware('throttle:120,1')->name('ranking');
+
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });

@@ -32,6 +32,9 @@
                         <a href="{{ route('game') }}" class="rounded-lg px-3 py-2 text-sm font-semibold text-denarius-100 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-denarius-300">
                             Jogo
                         </a>
+                        <a href="{{ route('ranking') }}" class="rounded-lg px-3 py-2 text-sm font-semibold text-denarius-100 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-denarius-300">
+                            Ranking
+                        </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="rounded-lg border border-white/15 px-3 py-2 text-sm font-semibold hover:border-denarius-300 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-denarius-300">

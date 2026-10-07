@@ -84,6 +84,19 @@ class ScoreCalculator
         );
     }
 
+    public function completedBreakdown(int $foundWordsCount, int $durationSeconds): ScoreAward
+    {
+        if ($foundWordsCount < 0) {
+            throw new InvalidArgumentException('A quantidade de palavras encontradas não pode ser negativa.');
+        }
+
+        return new ScoreAward(
+            wordPoints: $this->wordPoints($foundWordsCount),
+            completionBonus: $this->completionBonus(),
+            speedBonus: $this->speedBonus($durationSeconds),
+        );
+    }
+
     public function maximumScore(int $totalWords): int
     {
         return $this->wordPoints($totalWords)

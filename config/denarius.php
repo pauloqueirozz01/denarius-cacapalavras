@@ -39,6 +39,12 @@ return [
         ],
     ],
 
+    'leaderboard' => [
+        'poll_interval_seconds' => 5,
+        'per_page' => 20,
+        'maximum_per_page' => 50,
+    ],
+
     'game_interface' => [
         'decay_seconds' => 60,
         'start' => [

@@ -171,7 +171,7 @@ class GameBoardTest extends TestCase
             ->assertSee('Pontuação final:')
             ->assertSee('1.100')
             ->assertSee('01:05')
-            ->assertSee('Nova partida')
+            ->assertSee('Jogar novamente')
             ->assertDontSee('Abandonar partida');
 
         $component->call('selectWord', 0, 0, 0, 4)->assertSee('já foi encerrada');
@@ -193,6 +193,8 @@ class GameBoardTest extends TestCase
             ->assertSee('Partida abandonada')
             ->assertSee('Nova partida')
             ->assertDontSee('Abandonar partida')
+            ->assertDontSee('Sua melhor posição')
+            ->assertDontSee('Ver ranking')
             ->call('selectWord', 0, 0, 0, 4)
             ->assertSee('já foi encerrada');
 
@@ -249,6 +251,77 @@ class GameBoardTest extends TestCase
 
         $this->assertStringNotContainsString('<script>alert("xss")</script>', $html);
         $this->assertStringContainsString('&lt;script&gt;', $html);
+    }
+
+    public function test_completed_result_uses_historical_scoring_snapshot_and_shows_best_rank(): void
+    {
+        $user = User::factory()->participant()->create();
+        $startedAt = now()->subSeconds(90);
+        $session = GameSession::factory()->for($user)->completed()->create([
+            'score' => 410,
+            'total_words' => 2,
+            'found_words_count' => 2,
+            'duration_seconds' => 90,
+            'started_at' => $startedAt,
+            'finished_at' => $startedAt->copy()->addSeconds(90),
+            'generation_config' => [
+                'rows' => 3,
+                'columns' => 5,
+                'word_count' => 2,
+                'scoring' => [
+                    'points_per_word' => 80,
+                    'completion_bonus' => 250,
+                    'speed_bonus_tiers' => [
+                        ['up_to_seconds' => 60, 'points' => 50],
+                    ],
+                ],
+            ],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(GameBoard::class)
+            ->assertSee('Pontuação final:')
+            ->assertSee('410')
+            ->assertSee('01:30')
+            ->assertSee('Palavras: +160')
+            ->assertSee('Conclusão: +250')
+            ->assertSee('Velocidade: +0')
+            ->assertSee('Sua melhor posição:')
+            ->assertSee('1º lugar')
+            ->assertSee('Ver ranking')
+            ->assertSee('Jogar novamente');
+
+        $this->assertSame(410, $session->refresh()->score);
+    }
+
+    public function test_playing_again_preserves_completed_history_and_repeated_start_resumes_one_active_game(): void
+    {
+        config([
+            'denarius.word_search.rows' => 5,
+            'denarius.word_search.columns' => 5,
+            'denarius.word_search.word_count' => 1,
+        ]);
+        $user = User::factory()->participant()->create();
+        $completedSession = GameSession::factory()->for($user)->completed()->create(['score' => 1600]);
+        FinancialTerm::factory()->active()->create([
+            'term' => 'Pix',
+            'description' => 'Pagamento instantâneo.',
+        ]);
+
+        Livewire::actingAs($user)->test(GameBoard::class)
+            ->call('startGame')
+            ->assertSee('Sua partida começou')
+            ->assertSee('Tabuleiro')
+            ->call('startGame')
+            ->assertSee('Sua partida ativa foi retomada.');
+
+        $sessions = GameSession::query()->whereBelongsTo($user)->orderBy('id')->get();
+
+        $this->assertCount(2, $sessions);
+        $this->assertSame(GameSessionStatus::Completed, $sessions[0]->status);
+        $this->assertSame(1600, $sessions[0]->score);
+        $this->assertSame(GameSessionStatus::Active, $sessions[1]->status);
+        $this->assertSame(1, $sessions[1]->words()->count());
     }
 
     /**

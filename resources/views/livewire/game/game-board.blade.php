@@ -83,17 +83,40 @@
                         <p class="mt-1 text-sm text-white/70">
                             {{ $isCompleted ? 'Pontuação final' : 'Pontuação conquistada' }}: <strong class="text-white">{{ number_format($session->score, 0, ',', '.') }}</strong>
                         </p>
+                        @if ($isCompleted && $scoreBreakdown !== null)
+                            <p class="mt-2 text-sm text-white/65">
+                                Palavras: +{{ number_format($scoreBreakdown->wordPoints, 0, ',', '.') }}
+                                · Conclusão: +{{ number_format($scoreBreakdown->completionBonus, 0, ',', '.') }}
+                                · Velocidade: +{{ number_format($scoreBreakdown->speedBonus, 0, ',', '.') }}
+                            </p>
+                        @endif
+                        @if ($isCompleted)
+                            <p class="mt-2 text-sm text-white/75">
+                                @if ($rankingPosition !== null)
+                                    Sua melhor posição: <strong class="text-white">{{ $rankingPosition->position }}º lugar</strong>
+                                @elseif ($rankingUnavailable)
+                                    Sua posição será consultada ao abrir o ranking.
+                                @else
+                                    Seu resultado entrará na classificação geral.
+                                @endif
+                            </p>
+                        @endif
                     </div>
-                    <button
-                        type="button"
-                        wire:click="startGame"
-                        wire:loading.attr="disabled"
-                        wire:target="startGame"
-                        class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-white px-6 py-3 font-black text-denarius-900 transition hover:bg-denarius-50 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                    >
-                        <span wire:loading.remove wire:target="startGame">Nova partida</span>
-                        <span wire:loading wire:target="startGame">Preparando…</span>
-                    </button>
+                    <div class="flex shrink-0 flex-col gap-3 sm:items-end">
+                        @if ($isCompleted)
+                            <a href="{{ route('ranking') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/20 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Ver ranking</a>
+                        @endif
+                        <button
+                            type="button"
+                            wire:click="startGame"
+                            wire:loading.attr="disabled"
+                            wire:target="startGame"
+                            class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-white px-6 py-3 font-black text-denarius-900 transition hover:bg-denarius-50 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                        >
+                            <span wire:loading.remove wire:target="startGame">{{ $isCompleted ? 'Jogar novamente' : 'Nova partida' }}</span>
+                            <span wire:loading wire:target="startGame">Preparando…</span>
+                        </button>
+                    </div>
                 </div>
             </section>
         @endif
