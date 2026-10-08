@@ -42,6 +42,9 @@
                             </button>
                         </form>
                     @else
+                        <a href="{{ route('game') }}" class="rounded-lg px-3 py-2 text-sm font-semibold text-denarius-100 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-denarius-300">
+                            Jogar
+                        </a>
                         <a href="{{ route('login') }}" class="rounded-lg px-3 py-2 text-sm font-semibold text-denarius-100 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-denarius-300">
                             Entrar
                         </a>

@@ -17,9 +17,12 @@ class GameBoardTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guest_is_redirected_from_the_game_page(): void
+    public function test_guest_can_open_the_game_page(): void
     {
-        $this->get(route('game'))->assertRedirectToRoute('login');
+        $this->get(route('game'))
+            ->assertOk()
+            ->assertSeeLivewire(GameBoard::class)
+            ->assertSee('Iniciar partida');
     }
 
     public function test_authenticated_user_without_a_session_can_open_the_start_screen(): void

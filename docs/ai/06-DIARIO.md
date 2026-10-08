@@ -158,3 +158,11 @@
 - Pacote `dist/denarius-cacapalavras-be63805a.zip` (21.078.430 bytes, SHA-256 `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`), com o conteúdo na raiz para extração em `/home1/denarius/gamefinanceiro.com`. Sem `.env`/`.env.example`, `.git`, `node_modules`, testes, docs, logs, caches compilados ou secrets.
 - Duas sessões de agente trabalharam em paralelo nesta etapa. O ZIP foi regenerado uma vez para excluir `.env.example`, que tinha a senha de desenvolvimento local; vale só o checksum acima.
 - Nenhum deploy, migration de produção, acesso ao cPanel, DNS, SSL ou Document Root foi executado. A readiness do deploy continua `BLOCKED` pelas pendências de infraestrutura do contrato.
+
+## 2026-10-08 — Jogar sem cadastro
+
+- `/game` passou a ser público. O visitante joga com a partida guardada só na sessão HTTP do servidor (`GuestGameStore`), sem migration, sem linhas no banco e fora do ranking. O tabuleiro, a validação das seleções e o score continuam no servidor, reaproveitando gerador, validador, modelo e `ScoreCalculator`.
+- Para registrar a pontuação é preciso entrar ou se cadastrar. `ClaimGuestGameAction` roda no login e no cadastro: partida concluída entra no ranking com o score e a duração originais; ativa continua na conta, exceto se já houver uma ativa; abandonada é descartada.
+- Interface: "Jogar agora" na página inicial, link "Jogar" na navegação para visitantes, aviso durante a partida e botões "Entrar e salvar" / "Criar conta e salvar" ao concluir. `/ranking` e o painel admin continuam exigindo login.
+- Testes: 210 PHPUnit / 1.403 assertions (12 novos, 2 ajustados porque `/game` não redireciona mais para o login), JS 5/5, Pint aprovado.
+- Desenvolvido na branch `feat/guest-play`, num worktree separado, enquanto outro agente tratava erros de frontend na `fix/cpanel-compatibility`. O ZIP `denarius-cacapalavras-be63805a.zip` fica obsoleto: é preciso gerar um pacote novo depois do merge.

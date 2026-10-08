@@ -23,7 +23,10 @@
                         Ir para o jogo
                     </a>
                 @else
-                    <a href="{{ route('register') }}" class="rounded-xl bg-denarius-400 px-6 py-3 font-black text-white shadow-xl shadow-denarius-500/30 hover:bg-denarius-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+                    <a href="{{ route('game') }}" class="rounded-xl bg-denarius-400 px-6 py-3 font-black text-white shadow-xl shadow-denarius-500/30 hover:bg-denarius-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+                        Jogar agora
+                    </a>
+                    <a href="{{ route('register') }}" class="rounded-xl border border-white/20 px-6 py-3 font-bold hover:border-denarius-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
                         Criar minha conta
                     </a>
                     <a href="{{ route('login') }}" class="rounded-xl border border-white/20 px-6 py-3 font-bold hover:border-denarius-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">

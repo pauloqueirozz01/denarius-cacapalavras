@@ -75,8 +75,10 @@ MySQL
 
 ## Interface jogável
 
-- `GameBoard` é um componente Livewire class-based embutido na rota autenticada `/game`.
-- O componente sempre resolve a sessão pelo usuário autenticado; nenhum método público recebe `user_id` ou `game_session_id`.
+- `GameBoard` é um componente Livewire class-based embutido na rota pública `/game`.
+- O componente resolve a sessão pelo usuário autenticado ou, para visitantes, pela partida guardada na sessão HTTP (`GuestGameStore`); nenhum método público recebe `user_id` ou `game_session_id`.
+- Visitantes usam `StartGuestGameAction`, `FindGuestGameWordAction` e `AbandonGuestGameAction`, que operam sobre modelos não persistidos; o rate limit do visitante usa o ID da sessão + IP.
+- Login e cadastro chamam `ClaimGuestGameAction`; uma falha nessa etapa é reportada e não impede a autenticação.
 - Início, acerto e abandono delegam respectivamente para `StartGameSessionAction`, `FindGameSessionWordAction` e `AbandonGameSessionAction`.
 - A view recebe o grid persistido, termos originais, contadores e somente as células de palavras já encontradas. Placements pendentes permanecem no servidor.
 - `word-search-selection.js` usa Pointer Events para produzir trajetórias horizontais, verticais e diagonais, inclusive invertidas, e envia somente coordenadas no fim do gesto.
