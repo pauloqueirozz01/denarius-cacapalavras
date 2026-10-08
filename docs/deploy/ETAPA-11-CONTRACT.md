@@ -6,10 +6,10 @@ Este contrato é a fonte de verdade para o agente que fará o deploy. Foi produz
 
 - Branch de trabalho: `fix/cpanel-compatibility`.
 - Commit funcional aprovado: `f2f3c48 fix: ensure cpanel production compatibility`.
-- SHA: `f2f3c48` (código/runtime). Os commits posteriores só alteram documentação.
-- **Pacote de produção gerado a partir de `be63805a6c7f4202553a3cf19510efe773c2f490`** (`be63805`). Ver seção "Pacote de produção".
-- Testes em `be63805`: **198 PHPUnit / 1.327 assertions**, 0 falhas; baseline anterior 197 / 1.325.
-- JavaScript: **5 testes aprovados**, 0 falhas.
+- O pacote inclui, além da compatibilidade cPanel (`f2f3c48`): jogo sem cadastro com gravação da partida no login/cadastro (sem migration), limites de autenticação para uma sala inteira na mesma rede, páginas de erro em pt-BR, proteção contra envio duplicado e ranking servido de cache de 10 s.
+- **Pacote de produção gerado a partir de `5e1b088466f3bdc887dff159bfe7227e6aac524f`** (`5e1b088`). Ver seção "Pacote de produção".
+- Testes em `5e1b088`: **235 PHPUnit / 1.573 assertions**, 0 falhas.
+- JavaScript: **11 testes aprovados**, 0 falhas.
 - Build: `pnpm install --frozen-lockfile` e `pnpm build` aprovados; `public/build/manifest.json` presente e incluído no pacote.
 - Pint, `composer validate --strict`, `composer audit --locked`, `pnpm audit --audit-level=high` e `git diff --check` aprovados.
 - `vendor/` gerado e `composer check-platform-reqs` aprovado em **PHP 8.4.26** (container Linux `php:8.4-cli`).
@@ -73,10 +73,10 @@ Composer no servidor não é pendência para instalação: o ZIP deve incluir `v
 
 | Item | Valor |
 |---|---|
-| Arquivo | `dist/denarius-cacapalavras-be63805a.zip` (fora do Git; `/dist` está no `.gitignore`) |
-| Tamanho | 21.078.430 bytes (21 MB); 14.457 arquivos |
-| SHA-256 | `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5` |
-| Branch / commit | `fix/cpanel-compatibility` / `be63805a6c7f4202553a3cf19510efe773c2f490` |
+| Arquivo | `dist/denarius-cacapalavras-5e1b0884.zip` (fora do Git; `/dist` está no `.gitignore`) |
+| Tamanho | 21.092.659 bytes (21 MB); 14.474 arquivos |
+| SHA-256 | `d921f5374e4c91b9bd3825cb3830c0d961bc88cbe11aafdf6a039acedeffba6b` |
+| Branch / commit | `fix/cpanel-compatibility` / `5e1b088466f3bdc887dff159bfe7227e6aac524f` |
 | Destino da extração | `/home1/denarius/gamefinanceiro.com` (conteúdo na raiz do ZIP: `artisan`, `app/`, `public/`, `vendor/`…) |
 | `vendor/` | Incluído; `composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction` em PHP 8.4.26; sem dependências de desenvolvimento; `platform_check.php` exige PHP 8.4.1+ |
 | `public/build` | Incluído, com `manifest.json`; assets do Filament publicados em `public/css`, `public/js` e `public/fonts` |
@@ -87,16 +87,16 @@ Composer no servidor não é pendência para instalação: o ZIP deve incluir `v
 Como o pacote foi gerado (sem tocar no servidor):
 
 ```bash
-git archive be63805 | tar -x -C dist/stage-be63805a   # checkout limpo, sem .env/.git/node_modules
-cp -R public/build dist/stage-be63805a/public/        # após pnpm install --frozen-lockfile && pnpm build
+git archive 5e1b088 | tar -x -C dist/stage-5e1b0884   # checkout limpo, sem .env/.git/node_modules
+cp -R public/build dist/stage-5e1b0884/public/        # após pnpm install --frozen-lockfile && pnpm build
 # remover do staging: tests, phpunit.xml, docs, .env.example, configs de ferramentas e de Node
-docker run --rm -v "$PWD/dist/stage-be63805a:/app" -w /app denarius-php84-build \
+docker run --rm -v "$PWD/dist/stage-5e1b0884:/app" -w /app denarius-php84-build \
   sh -c 'composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction && composer check-platform-reqs --no-dev'
-(cd dist/stage-be63805a && zip -qr -X ../denarius-cacapalavras-be63805a.zip .)
-shasum -a 256 dist/denarius-cacapalavras-be63805a.zip
+(cd dist/stage-5e1b0884 && zip -qr -X ../denarius-cacapalavras-5e1b0884.zip .)
+shasum -a 256 dist/denarius-cacapalavras-5e1b0884.zip
 ```
 
-A imagem `denarius-php84-build` é `php:8.4-cli` com `intl`, `zip` e `pdo_mysql` e o Composer 2; o container é descartado com `--rm`. Antes de extrair no servidor, conferir o SHA-256 do arquivo enviado (`sha256sum denarius-cacapalavras-be63805a.zip`). Se não bater, abortar.
+A imagem `denarius-php84-build` é `php:8.4-cli` com `intl`, `zip` e `pdo_mysql` e o Composer 2; o container é descartado com `--rm`. Antes de extrair no servidor, conferir o SHA-256 do arquivo enviado (`sha256sum denarius-cacapalavras-5e1b0884.zip`). Se não bater, abortar.
 
 ## Estratégia de release
 
@@ -105,7 +105,7 @@ A imagem `denarius-php84-build` é `php:8.4-cli` com `intl`, `zip` e `pdo_mysql`
 - Excluir `.env`/segredos, `.git/`, `node_modules/`, testes, logs, caches de execução, dumps, backups, `auth.json` e arquivos temporários.
 - `public/build/manifest.json` precisa existir. Build local com `pnpm install --frozen-lockfile` e `pnpm build`; Node/pnpm não vão para o servidor.
 - Document Root: `/home1/denarius/gamefinanceiro.com/public`. Se releases/symlinks não estiverem disponíveis, interromper e obter aprovação de uma topologia privada segura; não improvisar paths.
-- O `.env` será criado/configurado no diretório privado do servidor com `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=http://gamefinanceiro.com` na fase de teste sem SSL (decisão do proprietário em 2026-10-07; trocar para `https://` após SSL), DB host/port/name/user acima, segredo DB privado, sessão/cache database, queue sync, `SESSION_HTTP_ONLY=true`, `SESSION_SAME_SITE=lax` e `SESSION_SECURE_COOKIE=true` somente após SSL confirmado. Gerar APP_KEY exclusiva uma única vez; nunca substituir chave existente de uma instalação ativa.
+- O `.env` será criado/configurado no diretório privado do servidor com `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=http://gamefinanceiro.com` na fase de teste sem SSL (decisão do proprietário em 2026-10-07; trocar para `https://` após SSL), DB host/port/name/user acima, segredo DB privado, sessão/cache database, queue sync, as variáveis de limite e de ranking do template em `PRODUCTION-ENV.md`, `SESSION_HTTP_ONLY=true`, `SESSION_SAME_SITE=lax` e `SESSION_SECURE_COOKIE=true` somente após SSL confirmado. Gerar APP_KEY exclusiva uma única vez; nunca substituir chave existente de uma instalação ativa.
 
 ## Comandos autorizados de deploy
 
@@ -113,7 +113,7 @@ Estes comandos são para a Etapa 11, após autorização explícita, backup conf
 
 ```bash
 # no cPanel: validar o pacote enviado e extrair em /home1/denarius/gamefinanceiro.com
-sha256sum denarius-cacapalavras-be63805a.zip   # deve ser 44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5
+sha256sum denarius-cacapalavras-5e1b0884.zip   # deve ser d921f5374e4c91b9bd3825cb3830c0d961bc88cbe11aafdf6a039acedeffba6b
 
 # no cPanel, sempre com o binário PHP 8.4.1+ confirmado
 <PHP84_CLI> artisan about
@@ -136,7 +136,7 @@ Parar e não apontar tráfego se qualquer item ocorrer:
 - PHP Web ou CLI abaixo de 8.4.1, incompatível ou sem `pdo_mysql`/extensão obrigatória.
 - Document Root não puder apontar ao `public/` seguro indicado; `.env`/código privado ficaria acessível pela web.
 - HTTPS válido não estiver pronto antes de ativar cookie `Secure` (na fase HTTP, `SESSION_SECURE_COOKIE=false`).
-- SHA-256 do ZIP no servidor diferente de `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`.
+- SHA-256 do ZIP no servidor diferente de `d921f5374e4c91b9bd3825cb3830c0d961bc88cbe11aafdf6a039acedeffba6b`.
 - Banco não for o Percona 5.7.44-48 informado, conexão/grants falharem, charset não for utf8mb4, consulta do ranking ou migration falhar.
 - Não houver backup validado e rollback viável; storage/cache não forem graváveis com permissões mínimas.
 - ZIP não contiver `vendor/` compatível e `public/build/manifest.json`, ou contiver segredos, `.git`, `node_modules`, dumps/backups.

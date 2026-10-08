@@ -1,6 +1,6 @@
 # Check-up de compatibilidade cPanel — pré-Etapa 11
 
-**Resultado:** código ajustado para o ambiente declarado e **pacote de produção READY**: `dist/denarius-cacapalavras-be63805a.zip`, SHA-256 `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`, detalhado em `ETAPA-11-CONTRACT.md`. A **readiness do deploy continua BLOCKED** até que o responsável do cPanel confirme os itens de infraestrutura pendentes e haja validação direta no banco de destino. Este check-up não é a Etapa 11. Nenhum deploy, migration, alteração de DNS/SSL/Document Root ou escrita remota foi executada.
+**Resultado:** código ajustado para o ambiente declarado e **pacote de produção READY**: `dist/denarius-cacapalavras-5e1b0884.zip`, SHA-256 `d921f5374e4c91b9bd3825cb3830c0d961bc88cbe11aafdf6a039acedeffba6b`, detalhado em `ETAPA-11-CONTRACT.md`. A **readiness do deploy continua BLOCKED** até que o responsável do cPanel confirme os itens de infraestrutura pendentes e haja validação direta no banco de destino. Este check-up não é a Etapa 11. Nenhum deploy, migration, alteração de DNS/SSL/Document Root ou escrita remota foi executada.
 
 ## Ambiente alvo informado pelo proprietário
 
@@ -75,8 +75,8 @@ Nenhuma migration, configuração de sessão/cache/queue, collation, regra de sc
 | Verificação | Resultado |
 |---|---|
 | Baseline pré-alteração | 197 PHPUnit / 1.325 assertions aprovados |
-| Suíte final | 198 PHPUnit / 1.327 assertions, 0 falhas |
-| JavaScript | 5 testes aprovados, 0 falhas |
+| Suíte final | 235 PHPUnit / 1.573 assertions, 0 falhas (em `5e1b088`) |
+| JavaScript | 11 testes aprovados, 0 falhas |
 | Testes de RankingService após correção | 8 testes / 29 assertions aprovados |
 | Pint | `./vendor/bin/pint --test` e `pint --dirty --format agent` aprovados |
 | Composer | `composer validate --strict` aprovado; `composer check-platform-reqs` aprovado no PHP 8.5.11 local |
@@ -86,8 +86,8 @@ Nenhuma migration, configuração de sessão/cache/queue, collation, regra de sc
 | Diff | `git diff --check` aprovado |
 | MySQL/Percona | Suíte completa, migrations e `EXPLAIN` do ranking aprovados num container local Percona Server 5.7.44-48; banco do cPanel não testado |
 | PHP 8.4 | `vendor/` gerado e `composer check-platform-reqs --no-dev` aprovado em PHP 8.4.26 (container Linux) |
-| Pacote | `dist/denarius-cacapalavras-be63805a.zip`, 21.078.430 bytes, SHA-256 `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`; `unzip -t` sem erros; arquivos obrigatórios presentes; sem `.env*`, `.git`, `node_modules`, testes, logs ou secrets |
+| Pacote | `dist/denarius-cacapalavras-5e1b0884.zip`, 21.092.659 bytes, SHA-256 `d921f5374e4c91b9bd3825cb3830c0d961bc88cbe11aafdf6a039acedeffba6b`; `unzip -t` sem erros; arquivos obrigatórios presentes; sem `.env*`, `.git`, `node_modules`, testes, logs ou secrets |
 | Migrations | 8 status `Ran` no banco local MySQL 8.4; nenhuma migration executada no cPanel |
 | Estado cPanel | Sem sessão/acesso remoto; pendências no readiness e contrato |
 
-O pacote foi gerado de `be63805a6c7f4202553a3cf19510efe773c2f490`. O resultado do deploy permanece **BLOCKED**, pois o patch real do PHP Web 8.4, o PHP CLI, DNS, grants, permissões, backups e a consulta/migrations no banco remoto não foram confirmados.
+O pacote foi gerado de `5e1b088466f3bdc887dff159bfe7227e6aac524f`. O resultado do deploy permanece **BLOCKED**, pois o patch real do PHP Web 8.4, o PHP CLI, DNS, grants, permissões, backups e a consulta/migrations no banco remoto não foram confirmados.

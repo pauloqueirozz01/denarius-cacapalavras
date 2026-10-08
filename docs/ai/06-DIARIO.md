@@ -185,3 +185,4 @@
 - Pendência registrada, sem ação: um robô consegue concluir a partida em 0–3 segundos. Só importa se o ranking der prêmio.
 - `feat/guest-play` foi juntada na `fix/cpanel-compatibility`; os conflitos no controller de cadastro e no diário foram resolvidos mantendo as duas mudanças.
 - Validações na ponta da branch: PHPUnit 235/1.573, JS 11/11, Pint, `composer validate --strict`, `composer audit --locked`, `pnpm audit --audit-level=high`, `git diff --check` e build aprovados.
+- Novo pacote `dist/denarius-cacapalavras-5e1b0884.zip` (21.092.659 bytes, SHA-256 `d921f5374e4c91b9bd3825cb3830c0d961bc88cbe11aafdf6a039acedeffba6b`), gerado de `5e1b088` com `vendor/` em PHP 8.4.26 e `check-platform-reqs` aprovado. Substitui o `denarius-cacapalavras-be63805a.zip`, que fica obsoleto.
