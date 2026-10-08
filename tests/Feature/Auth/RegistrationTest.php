@@ -82,13 +82,49 @@ class RegistrationTest extends TestCase
         $response = $this->from(route('register'))->post(route('register.store'), [
             'name' => 'Participante',
             'email' => 'participant@example.com',
-            'password' => 'senhafraca',
-            'password_confirmation' => 'senhafraca',
+            'password' => '123imagina',
+            'password_confirmation' => '123imagina',
         ]);
 
         $response
             ->assertRedirectToRoute('register')
-            ->assertSessionHasErrors('password');
+            ->assertSessionHasErrors([
+                'password' => 'A senha deve conter pelo menos uma letra maiúscula e uma minúscula.',
+            ]);
+        $this->assertDatabaseMissing('users', ['email' => 'participant@example.com']);
+    }
+
+    public function test_registration_explains_when_password_has_no_number(): void
+    {
+        $response = $this->from(route('register'))->post(route('register.store'), [
+            'name' => 'Participante',
+            'email' => 'participant@example.com',
+            'password' => 'SenhaFraca',
+            'password_confirmation' => 'SenhaFraca',
+        ]);
+
+        $response
+            ->assertRedirectToRoute('register')
+            ->assertSessionHasErrors([
+                'password' => 'A senha deve conter pelo menos um número.',
+            ]);
+        $this->assertDatabaseMissing('users', ['email' => 'participant@example.com']);
+    }
+
+    public function test_registration_explains_password_minimum_length(): void
+    {
+        $response = $this->from(route('register'))->post(route('register.store'), [
+            'name' => 'Participante',
+            'email' => 'participant@example.com',
+            'password' => 'Ab1',
+            'password_confirmation' => 'Ab1',
+        ]);
+
+        $response
+            ->assertRedirectToRoute('register')
+            ->assertSessionHasErrors([
+                'password' => 'A senha deve ter pelo menos 8 caracteres.',
+            ]);
         $this->assertDatabaseMissing('users', ['email' => 'participant@example.com']);
     }
 
