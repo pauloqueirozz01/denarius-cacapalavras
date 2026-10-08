@@ -44,6 +44,44 @@ class ErrorPagesTest extends TestCase
             ->assertDontSee('Server Error');
     }
 
+    public function test_missing_page_is_in_ptbr(): void
+    {
+        $this->get('/pagina-que-nao-existe')
+            ->assertNotFound()
+            ->assertSee('Página não encontrada')
+            ->assertSee('Voltar ao início')
+            ->assertDontSee('Not Found');
+    }
+
+    public function test_forbidden_page_is_in_ptbr(): void
+    {
+        Route::middleware('web')->get('/_test/forbidden', fn () => abort(403));
+
+        $this->get('/_test/forbidden')
+            ->assertForbidden()
+            ->assertSee('Você não tem acesso a esta página')
+            ->assertDontSee('Forbidden');
+    }
+
+    public function test_wrong_http_method_uses_the_generic_ptbr_page(): void
+    {
+        $this->get('/logout')
+            ->assertMethodNotAllowed()
+            ->assertSee('Não foi possível abrir esta página')
+            ->assertSee('Erro 405')
+            ->assertDontSee('Method Not Allowed');
+    }
+
+    public function test_other_server_errors_use_the_generic_ptbr_page(): void
+    {
+        Route::middleware('web')->get('/_test/bad-gateway', fn () => abort(502));
+
+        $this->get('/_test/bad-gateway')
+            ->assertStatus(502)
+            ->assertSee('Algo deu errado do nosso lado')
+            ->assertDontSee('Bad Gateway');
+    }
+
     public function test_maintenance_page_is_in_ptbr(): void
     {
         Route::middleware('web')->get('/_test/maintenance', fn () => abort(503));
