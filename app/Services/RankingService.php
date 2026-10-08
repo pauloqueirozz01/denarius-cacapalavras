@@ -7,6 +7,7 @@ use App\Enums\GameSessionStatus;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator as PaginatorResolver;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class RankingService
@@ -17,13 +18,7 @@ class RankingService
         $perPage = min(max($perPage ?? (int) config('denarius.leaderboard.per_page', 20), 1), $maximumPerPage);
         $currentPage = max($page ?? PaginatorResolver::resolveCurrentPage('page'), 1);
         $offset = ($currentPage - 1) * $perPage;
-        $items = $this->bestParticipantsQuery()
-            ->orderByDesc('score')
-            ->orderByRaw('(duration_seconds IS NULL) ASC')
-            ->orderBy('duration_seconds')
-            ->orderByRaw('(finished_at IS NULL) ASC')
-            ->orderBy('finished_at')
-            ->orderBy('session_id')
+        $items = $this->orderedBestParticipantsQuery()
             ->forPage($currentPage, $perPage)
             ->get()
             ->values()
@@ -40,6 +35,19 @@ class RankingService
         );
 
         return $paginator;
+    }
+
+    /**
+     * The whole ranking in its total order, positions starting at 1.
+     *
+     * @return Collection<int, LeaderboardEntry>
+     */
+    public function orderedEntries(): Collection
+    {
+        return $this->orderedBestParticipantsQuery()
+            ->get()
+            ->values()
+            ->map(fn (object $row, int $index): LeaderboardEntry => $this->entryFromRow($row, $index + 1));
     }
 
     public function positionForUser(int $userId): ?LeaderboardEntry
@@ -64,6 +72,17 @@ class RankingService
     public function totalParticipants(): int
     {
         return (int) $this->bestParticipantsQuery()->count();
+    }
+
+    private function orderedBestParticipantsQuery(): Builder
+    {
+        return $this->bestParticipantsQuery()
+            ->orderByDesc('score')
+            ->orderByRaw('(duration_seconds IS NULL) ASC')
+            ->orderBy('duration_seconds')
+            ->orderByRaw('(finished_at IS NULL) ASC')
+            ->orderBy('finished_at')
+            ->orderBy('session_id');
     }
 
     /**

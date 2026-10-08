@@ -3,7 +3,7 @@
 namespace App\Livewire\Ranking;
 
 use App\Data\LeaderboardEntry;
-use App\Services\RankingService;
+use App\Services\CachedLeaderboard;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -23,13 +23,13 @@ class LeaderboardBoard extends Component
         $userId = (int) Auth::id();
 
         try {
-            $ranking = app(RankingService::class);
+            $leaderboard = app(CachedLeaderboard::class);
             $perPage = min(
                 max((int) config('denarius.leaderboard.per_page', 20), 1),
                 (int) config('denarius.leaderboard.maximum_per_page', 50),
             );
-            $entries = $ranking->paginate($perPage);
-            $playerPosition = $ranking->positionForUser($userId);
+            $entries = $leaderboard->page($perPage, $this->getPage());
+            $playerPosition = $leaderboard->positionForUser($userId);
         } catch (Throwable $exception) {
             report($exception);
             $hasError = true;
@@ -44,7 +44,7 @@ class LeaderboardBoard extends Component
                     fn (LeaderboardEntry $entry): bool => $entry->userId === $userId,
                 ),
             'hasError' => $hasError,
-            'pollInterval' => (int) config('denarius.leaderboard.poll_interval_seconds', 5),
+            'pollInterval' => max((int) config('denarius.leaderboard.poll_interval_seconds', 10), 1),
         ]);
     }
 }

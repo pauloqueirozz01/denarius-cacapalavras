@@ -40,8 +40,8 @@ class LeaderboardBoardTest extends TestCase
 
         $html = Livewire::actingAs($player)->test(LeaderboardBoard::class)->html();
 
-        $this->assertStringContainsString('wire:poll.5s', $html);
-        $this->assertStringContainsString('Atualização automática a cada 5 segundos', $html);
+        $this->assertStringContainsString('wire:poll.visible.10s', $html);
+        $this->assertStringContainsString('Atualização automática a cada 10 segundos', $html);
         $this->assertStringContainsString('1º lugar', $html);
         $this->assertStringContainsString('Minha posição', $html);
         $this->assertStringContainsString('1.000', $html);
@@ -50,8 +50,9 @@ class LeaderboardBoardTest extends TestCase
         $this->assertStringNotContainsString('999999', $html);
     }
 
-    public function test_rank_updates_on_refresh_without_writing_or_starting_a_game(): void
+    public function test_rank_is_served_from_cache_and_updates_after_the_ttl_without_writing(): void
     {
+        config(['denarius.leaderboard.cache_seconds' => 10]);
         $viewer = User::factory()->participant()->create();
         $component = Livewire::actingAs($viewer)->test(LeaderboardBoard::class)
             ->assertSee('Ainda não há partidas concluídas');
@@ -59,6 +60,12 @@ class LeaderboardBoardTest extends TestCase
         $session = $this->completedSession($winner, ['score' => 1500]);
         $updatedAt = $session->updated_at->toISOString();
 
+        $this->travel(9)->seconds();
+        $component->call('$refresh')
+            ->assertSee('Ainda não há partidas concluídas')
+            ->assertDontSee('Novo primeiro');
+
+        $this->travel(2)->seconds();
         $component->call('$refresh')->assertSee('Novo primeiro');
 
         $this->assertSame(1, GameSession::query()->count());
@@ -86,7 +93,7 @@ class LeaderboardBoardTest extends TestCase
     {
         $user = User::factory()->participant()->create();
         $ranking = Mockery::mock(RankingService::class);
-        $ranking->shouldReceive('paginate')->once()->andThrow(new \RuntimeException('database unavailable'));
+        $ranking->shouldReceive('orderedEntries')->once()->andThrow(new \RuntimeException('database unavailable'));
         $this->app->instance(RankingService::class, $ranking);
 
         Livewire::actingAs($user)
@@ -138,6 +145,34 @@ class LeaderboardBoardTest extends TestCase
     /**
      * @param  array<string, mixed>  $attributes
      */
+    public function test_one_snapshot_serves_every_viewer_within_the_ttl(): void
+    {
+        $this->completedSession(User::factory()->participant()->create(['name' => 'Líder']), ['score' => 1500]);
+        $ranking = Mockery::mock(RankingService::class, [])->makePartial();
+        $ranking->shouldReceive('orderedEntries')->once()->passthru();
+        $this->app->instance(RankingService::class, $ranking);
+
+        foreach (User::factory()->participant()->count(3)->create() as $viewer) {
+            Livewire::actingAs($viewer)
+                ->test(LeaderboardBoard::class)
+                ->assertSee('Líder')
+                ->call('$refresh')
+                ->assertSee('Líder');
+        }
+    }
+
+    public function test_player_sees_own_new_position_after_one_ttl(): void
+    {
+        config(['denarius.leaderboard.cache_seconds' => 10]);
+        $player = User::factory()->participant()->create(['name' => 'Recém-chegado']);
+        $component = Livewire::actingAs($player)->test(LeaderboardBoard::class);
+
+        $this->completedSession($player, ['score' => 900]);
+        $this->travel(11)->seconds();
+
+        $component->call('$refresh')->assertSee('1º lugar')->assertSee('Recém-chegado');
+    }
+
     private function completedSession(User $user, array $attributes = []): GameSession
     {
         $startedAt = now()->subMinutes(2);

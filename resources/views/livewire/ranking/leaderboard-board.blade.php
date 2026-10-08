@@ -1,5 +1,5 @@
 <section
-    wire:poll.{{ $pollInterval }}s
+    wire:poll.visible.{{ $pollInterval }}s
     class="grid gap-6"
     aria-label="Classificação geral"
 >
