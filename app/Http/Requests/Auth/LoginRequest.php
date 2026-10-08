@@ -43,6 +43,8 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        RateLimiter::hit($this->ipThrottleKey(), config('denarius.auth.login.decay_seconds'));
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey(), config('denarius.auth.login.decay_seconds'));
 
@@ -61,13 +63,19 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), config('denarius.auth.login.max_attempts'))) {
+        $limitedKey = match (true) {
+            RateLimiter::tooManyAttempts($this->throttleKey(), config('denarius.auth.login.max_attempts')) => $this->throttleKey(),
+            RateLimiter::tooManyAttempts($this->ipThrottleKey(), config('denarius.auth.login.ip_max_attempts')) => $this->ipThrottleKey(),
+            default => null,
+        };
+
+        if ($limitedKey === null) {
             return;
         }
 
         event(new Lockout($this));
 
-        $seconds = RateLimiter::availableIn($this->throttleKey());
+        $seconds = RateLimiter::availableIn($limitedKey);
 
         throw ValidationException::withMessages([
             'email' => "Muitas tentativas. Tente novamente em {$seconds} segundos.",
@@ -77,6 +85,15 @@ class LoginRequest extends FormRequest
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->string('email')->toString()).'|'.$this->ip());
+    }
+
+    /**
+     * Ceiling shared by everyone behind the same IP, high enough for a whole
+     * event room on one Wi-Fi network and low enough to stop a flood.
+     */
+    public function ipThrottleKey(): string
+    {
+        return 'login-ip:'.$this->ip();
     }
 
     /**

@@ -11,9 +11,11 @@ return [
         'login' => [
             'max_attempts' => (int) env('AUTH_LOGIN_MAX_ATTEMPTS', 5),
             'decay_seconds' => (int) env('AUTH_LOGIN_DECAY_SECONDS', 60),
+            'ip_max_attempts' => (int) env('AUTH_LOGIN_IP_MAX_ATTEMPTS', 300),
         ],
         'registration' => [
-            'max_attempts' => (int) env('AUTH_REGISTER_MAX_ATTEMPTS', 3),
+            'email_max_attempts' => (int) env('AUTH_REGISTER_EMAIL_MAX_ATTEMPTS', 5),
+            'ip_max_attempts' => (int) env('AUTH_REGISTER_IP_MAX_ATTEMPTS', 120),
             'decay_minutes' => (int) env('AUTH_REGISTER_DECAY_MINUTES', 1),
         ],
     ],
@@ -40,7 +42,8 @@ return [
     ],
 
     'leaderboard' => [
-        'poll_interval_seconds' => 5,
+        'poll_interval_seconds' => (int) env('LEADERBOARD_POLL_INTERVAL_SECONDS', 10),
+        'cache_seconds' => (int) env('LEADERBOARD_CACHE_SECONDS', 10),
         'per_page' => 20,
         'maximum_per_page' => 50,
     ],

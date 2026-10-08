@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -128,14 +129,126 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'participant@example.com']);
     }
 
-    public function test_registration_endpoint_is_rate_limited(): void
+    public function test_ten_people_on_the_same_network_can_register_within_one_minute(): void
     {
-        $attempts = config('denarius.auth.registration.max_attempts');
+        for ($person = 1; $person <= 10; $person++) {
+            $this->post(route('register.store'), $this->registrationData("pessoa{$person}@example.com"))
+                ->assertRedirectToRoute('game');
 
-        for ($attempt = 0; $attempt < $attempts; $attempt++) {
-            $this->post(route('register.store'), [])->assertSessionHasErrors();
+            auth()->logout();
         }
 
-        $this->post(route('register.store'), [])->assertTooManyRequests();
+        $this->assertSame(10, User::query()->count());
+    }
+
+    public function test_same_email_above_the_limit_goes_back_to_the_form_with_a_ptbr_message(): void
+    {
+        $maxAttempts = config('denarius.auth.registration.email_max_attempts');
+
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            $this->from(route('register'))
+                ->post(route('register.store'), [...$this->registrationData('ana@example.com'), 'password_confirmation' => 'Diferente123'])
+                ->assertSessionHasErrors('password');
+        }
+
+        $response = $this->from(route('register'))
+            ->post(route('register.store'), $this->registrationData('ana@example.com'));
+
+        $response
+            ->assertRedirectToRoute('register')
+            ->assertSessionHasInput('name', 'Ana Silva')
+            ->assertSessionHasInput('email', 'ana@example.com')
+            ->assertSessionMissing('_old_input.password');
+        $this->assertMatchesRegularExpression(
+            '/^Muitas tentativas de cadastro\. Tente novamente em \d+ segundos\.$/',
+            session('errors')->first('email'),
+        );
+        $this->assertDatabaseMissing('users', ['email' => 'ana@example.com']);
+    }
+
+    public function test_flood_above_the_ip_ceiling_gets_the_ptbr_429_page(): void
+    {
+        config(['denarius.auth.registration.ip_max_attempts' => 3]);
+
+        for ($person = 1; $person <= 3; $person++) {
+            $this->post(route('register.store'), ['email' => "flood{$person}@example.com"])->assertSessionHasErrors();
+        }
+
+        $this->post(route('register.store'), ['email' => 'flood4@example.com'])
+            ->assertTooManyRequests()
+            ->assertHeader('Retry-After')
+            ->assertSee('Muitas tentativas em pouco tempo')
+            ->assertSee('segundos e tente de novo')
+            ->assertDontSee('Too Many Requests');
+    }
+
+    public function test_duplicate_email_race_is_a_validation_error_instead_of_a_server_error(): void
+    {
+        User::creating(function (User $user): void {
+            if (! DB::table('users')->where('email', $user->email)->exists()) {
+                DB::table('users')->insert([
+                    'name' => 'Envio concorrente',
+                    'email' => $user->email,
+                    'password' => Hash::make('Financeiro123'),
+                    'role' => UserRole::Participant->value,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+
+        $response = $this->from(route('register'))
+            ->post(route('register.store'), $this->registrationData('corrida@example.com'));
+
+        $response
+            ->assertRedirectToRoute('register')
+            ->assertSessionHasErrors(['email' => 'Este e-mail já está cadastrado.']);
+        $this->assertGuest();
+        $this->assertSame(1, User::query()->where('email', 'corrida@example.com')->count());
+    }
+
+    public function test_repeated_registration_post_after_success_is_sent_to_the_game(): void
+    {
+        $this->post(route('register.store'), $this->registrationData('dupla@example.com'))
+            ->assertRedirectToRoute('game');
+
+        $this->post(route('register.store'), $this->registrationData('dupla@example.com'))
+            ->assertRedirectToRoute('game');
+
+        $this->assertSame(1, User::query()->where('email', 'dupla@example.com')->count());
+    }
+
+    public function test_expired_session_on_registration_goes_back_to_the_form_with_the_typed_data(): void
+    {
+        $this->app->detectEnvironment(fn (): string => 'local');
+
+        $response = $this->post(route('register.store'), $this->registrationData('expirou@example.com'));
+
+        $response
+            ->assertRedirectToRoute('register')
+            ->assertSessionHasInput('email', 'expirou@example.com')
+            ->assertSessionMissing('_old_input.password')
+            ->assertSessionHasErrors(['email' => 'Sua sessão expirou. Confira os dados e envie novamente.']);
+        $this->assertDatabaseMissing('users', ['email' => 'expirou@example.com']);
+    }
+
+    public function test_registration_form_disables_the_button_while_submitting(): void
+    {
+        $this->get(route('register'))
+            ->assertSeeHtml('data-submit-once')
+            ->assertSeeHtml('data-submitting-label="Criando conta…"');
+    }
+
+    /**
+     * @return array{name: string, email: string, password: string, password_confirmation: string}
+     */
+    private function registrationData(string $email): array
+    {
+        return [
+            'name' => 'Ana Silva',
+            'email' => $email,
+            'password' => 'Financeiro123',
+            'password_confirmation' => 'Financeiro123',
+        ];
     }
 }

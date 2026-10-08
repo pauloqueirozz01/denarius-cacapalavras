@@ -284,7 +284,7 @@ class GameBoard extends Component
 
         if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
             $seconds = RateLimiter::availableIn($key);
-            $this->setFeedback("Muitas tentativas. Aguarde {$seconds} segundos.", 'error');
+            $this->setFeedback("Calma! Muitas tentativas em pouco tempo. Aguarde {$seconds} segundos e tente de novo.", 'error');
 
             return false;
         }

@@ -35,9 +35,9 @@
                         <a href="{{ route('ranking') }}" class="rounded-lg px-3 py-2 text-sm font-semibold text-denarius-100 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-denarius-300">
                             Ranking
                         </a>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" data-submit-once>
                             @csrf
-                            <button type="submit" class="rounded-lg border border-white/15 px-3 py-2 text-sm font-semibold hover:border-denarius-300 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-denarius-300">
+                            <button type="submit" data-submitting-label="Saindo…" class="rounded-lg border border-white/15 disabled:cursor-wait disabled:opacity-70 px-3 py-2 text-sm font-semibold hover:border-denarius-300 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-denarius-300">
                                 Sair
                             </button>
                         </form>

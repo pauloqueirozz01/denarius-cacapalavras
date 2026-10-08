@@ -5,7 +5,7 @@
 @section('content')
     <div class="mx-auto flex min-h-[calc(100vh-73px)] max-w-6xl items-center justify-center px-5 py-12">
         <x-auth-card title="Bem-vindo de volta" description="Entre para continuar sua jornada de educação financeira.">
-            <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-5">
+            <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-5" data-submit-once>
                 @csrf
 
                 <div class="flex flex-col gap-2">
@@ -29,7 +29,7 @@
                     Lembrar de mim
                 </label>
 
-                <button type="submit" class="rounded-xl bg-denarius-600 px-5 py-3 font-black text-white shadow-lg shadow-denarius-600/20 hover:bg-denarius-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-denarius-700">
+                <button type="submit" data-submitting-label="Entrando…" class="rounded-xl bg-denarius-600 disabled:cursor-wait disabled:opacity-70 px-5 py-3 font-black text-white shadow-lg shadow-denarius-600/20 hover:bg-denarius-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-denarius-700">
                     Entrar
                 </button>
             </form>
