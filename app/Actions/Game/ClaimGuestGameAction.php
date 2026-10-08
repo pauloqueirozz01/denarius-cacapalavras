@@ -7,6 +7,7 @@ use App\Exceptions\InvalidGameSessionSnapshotException;
 use App\Models\GameSession;
 use App\Models\GameSessionWord;
 use App\Models\User;
+use App\Services\CachedLeaderboard;
 use App\Services\GuestGameStore;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +38,7 @@ class ClaimGuestGameAction
 
         Gate::forUser($user)->authorize('create', GameSession::class);
 
-        return DB::transaction(function () use ($user, $guestGame): ?GameSession {
+        $claimedSession = DB::transaction(function () use ($user, $guestGame): ?GameSession {
             $lockedUser = User::query()
                 ->whereKey($user->getKey())
                 ->lockForUpdate()
@@ -73,5 +74,11 @@ class ClaimGuestGameAction
 
             return $session->load('words');
         }, 3);
+
+        if ($claimedSession?->status === GameSessionStatus::Completed) {
+            CachedLeaderboard::invalidate();
+        }
+
+        return $claimedSession;
     }
 }

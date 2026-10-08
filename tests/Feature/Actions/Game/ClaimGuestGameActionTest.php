@@ -10,6 +10,7 @@ use App\Models\FinancialTerm;
 use App\Models\GameSession;
 use App\Models\GameSessionWord;
 use App\Models\User;
+use App\Services\CachedLeaderboard;
 use App\Services\GuestGameStore;
 use App\Services\RankingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,6 +39,8 @@ class ClaimGuestGameActionTest extends TestCase
         $guestGame = $this->startGuestGame();
         $this->travel(65)->seconds();
         $this->findAllWords($guestGame);
+        config(['denarius.leaderboard.cache_seconds' => 60]);
+        $this->assertNull(app(CachedLeaderboard::class)->positionForUser((int) $user->getKey()));
 
         $this->post(route('login.store'), [
             'email' => 'player@example.com',
@@ -53,6 +56,7 @@ class ClaimGuestGameActionTest extends TestCase
         $this->assertSame($guestGame->grid, $session->grid);
         $this->assertSame(2, $session->words()->where('is_found', true)->count());
         $this->assertSame(1, app(RankingService::class)->positionForUser((int) $user->getKey())?->position);
+        $this->assertSame(1, app(CachedLeaderboard::class)->positionForUser((int) $user->getKey())?->position);
         $this->assertNull(app(GuestGameStore::class)->current());
     }
 
