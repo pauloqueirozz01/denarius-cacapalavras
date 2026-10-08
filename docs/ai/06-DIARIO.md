@@ -176,3 +176,12 @@
 - Interface: "Jogar agora" na página inicial, link "Jogar" na navegação para visitantes, aviso durante a partida e botões "Entrar e salvar" / "Criar conta e salvar" ao concluir. `/ranking` e o painel admin continuam exigindo login.
 - Testes: 210 PHPUnit / 1.403 assertions (12 novos, 2 ajustados porque `/game` não redireciona mais para o login), JS 5/5, Pint aprovado.
 - Desenvolvido na branch `feat/guest-play`, num worktree separado, enquanto outro agente tratava erros de frontend na `fix/cpanel-compatibility`. O ZIP `denarius-cacapalavras-be63805a.zip` fica obsoleto: é preciso gerar um pacote novo depois do merge.
+
+## 2026-10-08 — Reteste de QA e integração do modo convidado
+
+- QA refez o teste numa cópia isolada em modo produção: 25 cadastros em sequência e 25 simultâneos da mesma rede entraram; insistência com o mesmo e-mail e flood foram barrados com mensagens em pt-BR; clique duplo criou uma única conta; 419 no login e logout repetido não quebraram; partida, pontuação e ranking corretos.
+- Pendências apontadas e resolvidas: o `/ranking` atrasava até um TTL depois de uma partida concluída, e agora concluir uma partida (ou salvar a partida concluída de um visitante) limpa o snapshot do ranking; 404, 403 e erros genéricos `4xx`/`5xx` agora têm páginas em pt-BR.
+- Pendência fora do código: `ADMIN_NAME` com espaço precisa de aspas no `.env`.
+- Pendência registrada, sem ação: um robô consegue concluir a partida em 0–3 segundos. Só importa se o ranking der prêmio.
+- `feat/guest-play` foi juntada na `fix/cpanel-compatibility`; os conflitos no controller de cadastro e no diário foram resolvidos mantendo as duas mudanças.
+- Validações na ponta da branch: PHPUnit 235/1.573, JS 11/11, Pint, `composer validate --strict`, `composer audit --locked`, `pnpm audit --audit-level=high`, `git diff --check` e build aprovados.
