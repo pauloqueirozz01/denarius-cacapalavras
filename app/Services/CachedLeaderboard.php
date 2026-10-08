@@ -22,6 +22,15 @@ class CachedLeaderboard
 
     public function __construct(private readonly RankingService $ranking) {}
 
+    /**
+     * Drops the snapshot so a newly completed game shows up on the next poll
+     * instead of up to one TTL later.
+     */
+    public static function invalidate(): void
+    {
+        Cache::forget(self::CACHE_KEY);
+    }
+
     public function page(int $perPage, ?int $page = null): LengthAwarePaginator
     {
         $entries = $this->entries();

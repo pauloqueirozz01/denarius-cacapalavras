@@ -7,6 +7,7 @@ use App\Exceptions\InvalidWordSelectionException;
 use App\Models\GameSession;
 use App\Models\GameSessionWord;
 use App\Models\User;
+use App\Services\CachedLeaderboard;
 use App\Services\ScoreCalculator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ class FindGameSessionWordAction
     ): WordSelectionResult {
         Gate::forUser($user)->authorize('markWord', $session);
 
-        return DB::transaction(function () use (
+        $result = DB::transaction(function () use (
             $session,
             $startRow,
             $startColumn,
@@ -109,6 +110,12 @@ class FindGameSessionWordAction
                 speedBonus: $scoreAward->speedBonus,
             );
         }, 3);
+
+        if ($result->completedSession) {
+            CachedLeaderboard::invalidate();
+        }
+
+        return $result;
     }
 
     private function scoreCalculatorFor(GameSession $session): ScoreCalculator

@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\Livewire\Ranking;
 
+use App\Actions\Game\FindGameSessionWordAction;
 use App\Enums\GameSessionStatus;
 use App\Livewire\Ranking\LeaderboardBoard;
 use App\Models\GameSession;
+use App\Models\GameSessionWord;
 use App\Models\User;
 use App\Services\RankingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -171,6 +173,22 @@ class LeaderboardBoardTest extends TestCase
         $this->travel(11)->seconds();
 
         $component->call('$refresh')->assertSee('1º lugar')->assertSee('Recém-chegado');
+    }
+
+    public function test_completing_a_game_refreshes_the_ranking_without_waiting_for_the_ttl(): void
+    {
+        config(['denarius.leaderboard.cache_seconds' => 60]);
+        $player = User::factory()->participant()->create(['name' => 'Acabou de terminar']);
+        $session = GameSession::factory()->for($player)->active()->create();
+        GameSessionWord::factory()->for($session)->pending()->create();
+        $component = Livewire::actingAs($player)->test(LeaderboardBoard::class)
+            ->assertSee('Ainda não há partidas concluídas');
+
+        app(FindGameSessionWordAction::class)->execute($player, $session, 0, 0, 0, 4);
+
+        $component->call('$refresh')
+            ->assertSee('Acabou de terminar')
+            ->assertSee('1º lugar');
     }
 
     private function completedSession(User $user, array $attributes = []): GameSession
