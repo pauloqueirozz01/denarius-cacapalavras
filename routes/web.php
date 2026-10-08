@@ -8,6 +8,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+Route::get('/game', function () {
+    return view('game');
+})->middleware('throttle:120,1')->name('game');
+
 Route::middleware('guest')->group(function (): void {
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store'])
@@ -19,10 +23,6 @@ Route::middleware('guest')->group(function (): void {
 });
 
 Route::middleware('auth')->group(function (): void {
-    Route::get('/game', function () {
-        return view('game');
-    })->middleware('throttle:120,1')->name('game');
-
     Route::get('/ranking', function () {
         return view('ranking');
     })->middleware('throttle:120,1')->name('ranking');

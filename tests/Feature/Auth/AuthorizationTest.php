@@ -10,11 +10,12 @@ class AuthorizationTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
-    public function test_guest_is_redirected_to_login_from_game(): void
+    public function test_guest_can_open_the_game_without_login(): void
     {
-        $response = $this->get(route('game'));
-
-        $response->assertRedirectToRoute('login');
+        $this->get(route('game'))
+            ->assertOk()
+            ->assertSee('Olá, visitante')
+            ->assertSee('Você pode jogar sem cadastro.');
     }
 
     public function test_guest_is_redirected_to_login_from_ranking(): void

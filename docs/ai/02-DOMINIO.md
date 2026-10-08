@@ -18,7 +18,9 @@
 - Somente administradores gerenciam o catálogo; participantes não recebem uma listagem pública.
 - A operação administrativa do catálogo não exclui termos: desativar remove o termo de sorteios futuros sem apagar sua rastreabilidade; snapshots antigos continuam autossuficientes.
 - Recursos de usuários e partidas no Filament são apenas para consulta por administradores; alteração de papéis, score, estado, duração, grid e placements não faz parte do MVP operacional.
-- Uma sessão pertence ao usuário autenticado.
+- Uma sessão persistida pertence ao usuário autenticado.
+- Visitante joga sem conta: a partida fica só na sessão HTTP do servidor (`GuestGameStore`), nunca no banco nem no ranking, com o mesmo gerador, as mesmas regras de estado e o mesmo cálculo de score.
+- No login ou cadastro, `ClaimGuestGameAction` grava a partida do visitante na conta: concluída entra no ranking com o score e a duração medidos durante o jogo; ativa continua na conta, exceto se a conta já tiver uma partida ativa, caso em que é descartada; abandonada é descartada.
 - Um usuário possui no máximo uma sessão `ACTIVE`; nova criação é rejeitada até conclusão ou abandono explícito.
 - Uma seleção só é válida se suas coordenadas corresponderem exatamente a uma palavra da sessão, em qualquer dos dois sentidos.
 - Repetir uma seleção já encontrada é uma operação idempotente e não altera o contador.

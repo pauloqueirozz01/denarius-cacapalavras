@@ -55,11 +55,16 @@
     @if ($session === null)
         <section class="mx-auto grid max-w-3xl place-items-center rounded-[2rem] border border-white/15 bg-white/10 px-6 py-14 text-center shadow-2xl backdrop-blur-xl sm:px-12 sm:py-20">
             <x-mascot :state="$visualMascotState" size="large" class="mt-7" />
-            <p class="mt-7 text-sm font-bold uppercase tracking-[0.24em] text-denarius-200">Olá, {{ auth()->user()->name }}</p>
+            <p class="mt-7 text-sm font-bold uppercase tracking-[0.24em] text-denarius-200">Olá, {{ $isGuest ? 'visitante' : auth()->user()->name }}</p>
             <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-5xl">Seu desafio começa agora.</h2>
             <p class="mt-4 max-w-xl text-base leading-7 text-denarius-100/75 sm:text-lg">
                 Um novo tabuleiro será criado no servidor com termos financeiros escolhidos especialmente para esta partida.
             </p>
+            @if ($isGuest)
+                <p class="mt-3 max-w-xl text-sm leading-6 text-denarius-100/60">
+                    Você pode jogar sem cadastro. Para registrar sua pontuação no ranking, <a href="{{ route('login') }}" class="font-bold text-white underline decoration-denarius-300 underline-offset-4 hover:text-denarius-100">entre</a> ou <a href="{{ route('register') }}" class="font-bold text-white underline decoration-denarius-300 underline-offset-4 hover:text-denarius-100">crie sua conta</a>.
+                </p>
+            @endif
             <button
                 type="button"
                 wire:click="startGame"
@@ -101,7 +106,11 @@
                                     · Velocidade: +{{ number_format($scoreBreakdown->speedBonus, 0, ',', '.') }}
                                 </p>
                             @endif
-                            @if ($isCompleted)
+                            @if ($isCompleted && $isGuest)
+                                <p class="mt-2 text-sm text-white/75">
+                                    Esta pontuação ainda não está no ranking. Entre ou crie sua conta agora para registrá-la.
+                                </p>
+                            @elseif ($isCompleted)
                                 <p class="mt-2 text-sm text-white/75">
                                     @if ($rankingPosition !== null)
                                         Sua melhor posição: <strong class="text-white">{{ $rankingPosition->position }}º lugar</strong>
@@ -115,7 +124,12 @@
                         </div>
                     </div>
                     <div class="flex shrink-0 flex-col gap-3 sm:items-end">
-                        @if ($isCompleted)
+                        @if ($isCompleted && $isGuest)
+                            <div class="flex flex-wrap gap-2 sm:justify-end">
+                                <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/20 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Entrar e salvar</a>
+                                <a href="{{ route('register') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-black text-denarius-900 transition hover:bg-denarius-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Criar conta e salvar</a>
+                            </div>
+                        @elseif ($isCompleted)
                             <a href="{{ route('ranking') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/20 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Ver ranking</a>
                         @endif
                         <button
@@ -131,6 +145,12 @@
                     </div>
                 </div>
             </section>
+        @endif
+
+        @if ($isGuest && $isActive)
+            <p class="mb-5 rounded-2xl border border-denarius-300/20 bg-denarius-400/10 px-4 py-3 text-sm text-denarius-100" role="note">
+                Você está jogando como visitante. <a href="{{ route('login') }}" class="font-bold text-white underline decoration-denarius-300 underline-offset-4">Entre</a> ou <a href="{{ route('register') }}" class="font-bold text-white underline decoration-denarius-300 underline-offset-4">crie sua conta</a> para registrar a pontuação. A partida atual continua na sua conta.
+            </p>
         @endif
 
         <div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-7">

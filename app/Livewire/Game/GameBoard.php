@@ -3,8 +3,11 @@
 namespace App\Livewire\Game;
 
 use App\Actions\Game\AbandonGameSessionAction;
+use App\Actions\Game\AbandonGuestGameAction;
 use App\Actions\Game\FindGameSessionWordAction;
+use App\Actions\Game\FindGuestGameWordAction;
 use App\Actions\Game\StartGameSessionAction;
+use App\Actions\Game\StartGuestGameAction;
 use App\Enums\GameSessionStatus;
 use App\Exceptions\ActiveGameSessionExistsException;
 use App\Exceptions\InsufficientFinancialTermsException;
@@ -16,6 +19,7 @@ use App\Exceptions\WordSearchGenerationException;
 use App\Models\GameSession;
 use App\Models\GameSessionWord;
 use App\Models\User;
+use App\Services\GuestGameStore;
 use App\Services\RankingService;
 use App\Services\ScoreCalculator;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -40,16 +44,23 @@ class GameBoard extends Component
     #[Locked]
     public string $mascotState = 'idle';
 
-    public function startGame(StartGameSessionAction $startGameSession): void
-    {
-        $user = $this->authenticatedUser();
+    public function startGame(
+        StartGameSessionAction $startGameSession,
+        StartGuestGameAction $startGuestGame,
+    ): void {
+        $user = $this->currentUser();
 
         if (! $this->consumeAttempt('start', config('denarius.game_interface.start.max_attempts'))) {
             return;
         }
 
         try {
-            $startGameSession->execute($user);
+            if ($user === null) {
+                $startGuestGame->execute();
+            } else {
+                $startGameSession->execute($user);
+            }
+
             $this->setFeedback('Sua partida começou. Encontre os termos escondidos!', 'success', 'idle');
         } catch (ActiveGameSessionExistsException) {
             $this->setFeedback('Sua partida ativa foi retomada.', 'info');
@@ -73,6 +84,7 @@ class GameBoard extends Component
         mixed $endRow,
         mixed $endColumn,
         FindGameSessionWordAction $findGameSessionWord,
+        FindGuestGameWordAction $findGuestGameWord,
     ): array {
         $validator = Validator::make(
             compact('startRow', 'startColumn', 'endRow', 'endColumn'),
@@ -92,7 +104,7 @@ class GameBoard extends Component
 
         $coordinates = $validator->validated();
 
-        $user = $this->authenticatedUser();
+        $user = $this->currentUser();
 
         if (! $this->consumeAttempt('selection', config('denarius.game_interface.selection.max_attempts'))) {
             return ['active' => true];
@@ -107,14 +119,22 @@ class GameBoard extends Component
         }
 
         try {
-            $result = $findGameSessionWord->execute(
-                user: $user,
-                session: $session,
-                startRow: $coordinates['startRow'],
-                startColumn: $coordinates['startColumn'],
-                endRow: $coordinates['endRow'],
-                endColumn: $coordinates['endColumn'],
-            );
+            $result = $user === null
+                ? $findGuestGameWord->execute(
+                    session: $session,
+                    startRow: $coordinates['startRow'],
+                    startColumn: $coordinates['startColumn'],
+                    endRow: $coordinates['endRow'],
+                    endColumn: $coordinates['endColumn'],
+                )
+                : $findGameSessionWord->execute(
+                    user: $user,
+                    session: $session,
+                    startRow: $coordinates['startRow'],
+                    startColumn: $coordinates['startColumn'],
+                    endRow: $coordinates['endRow'],
+                    endColumn: $coordinates['endColumn'],
+                );
 
             if (! $result->wasNewlyFound) {
                 $this->setFeedback('Você já encontrou essa palavra.', 'info');
@@ -162,9 +182,11 @@ class GameBoard extends Component
         return ['active' => $this->activeSessionFor($user) !== null];
     }
 
-    public function abandonGame(AbandonGameSessionAction $abandonGameSession): void
-    {
-        $user = $this->authenticatedUser();
+    public function abandonGame(
+        AbandonGameSessionAction $abandonGameSession,
+        AbandonGuestGameAction $abandonGuestGame,
+    ): void {
+        $user = $this->currentUser();
 
         if (! $this->consumeAttempt('abandon', config('denarius.game_interface.abandon.max_attempts'))) {
             return;
@@ -179,7 +201,12 @@ class GameBoard extends Component
         }
 
         try {
-            $abandonGameSession->execute($user, $session);
+            if ($user === null) {
+                $abandonGuestGame->execute($session);
+            } else {
+                $abandonGameSession->execute($user, $session);
+            }
+
             $this->setFeedback('Partida abandonada. Você pode começar um novo desafio.', 'info');
         } catch (InvalidGameSessionStateException) {
             $this->setFeedback('Esta partida já foi encerrada.', 'info');
@@ -191,7 +218,7 @@ class GameBoard extends Component
 
     public function render(): View
     {
-        $user = $this->authenticatedUser();
+        $user = $this->currentUser();
         $session = $this->displaySessionFor($user);
         $words = collect();
         $foundCells = [];
@@ -200,11 +227,16 @@ class GameBoard extends Component
         $scoreBreakdown = null;
 
         if ($session !== null) {
-            Gate::forUser($user)->authorize('view', $session);
+            if ($user !== null) {
+                Gate::forUser($user)->authorize('view', $session);
+            }
+
             $session->loadMissing(['words' => fn (HasMany $query): HasMany => $query
                 ->orderBy('original_term')
                 ->orderBy('id')]);
-            $words = $session->words;
+            $words = $user === null
+                ? $session->words->sortBy([['original_term', 'asc'], ['id', 'asc']])->values()
+                : $session->words;
 
             foreach ($words->where('is_found', true) as $word) {
                 foreach ($this->cellsFor($word) as $cell) {
@@ -212,7 +244,7 @@ class GameBoard extends Component
                 }
             }
 
-            if ($session->status === GameSessionStatus::Completed) {
+            if ($user !== null && $session->status === GameSessionStatus::Completed) {
                 try {
                     $rankingPosition = app(RankingService::class)
                         ->positionForCompletedSession((int) $session->getKey());
@@ -220,7 +252,9 @@ class GameBoard extends Component
                     report($exception);
                     $rankingUnavailable = true;
                 }
+            }
 
+            if ($session->status === GameSessionStatus::Completed) {
                 $scoringSnapshot = $session->generation_config['scoring'] ?? null;
 
                 if (is_array($scoringSnapshot) && $session->duration_seconds !== null) {
@@ -243,6 +277,7 @@ class GameBoard extends Component
 
         return view('livewire.game.game-board', [
             'session' => $session,
+            'isGuest' => $user === null,
             'mascotState' => $this->mascotState,
             'words' => $words,
             'foundCells' => $foundCells,
@@ -252,16 +287,21 @@ class GameBoard extends Component
         ]);
     }
 
-    private function authenticatedUser(): User
+    private function currentUser(): ?User
     {
         $user = Auth::user();
-        abort_unless($user instanceof User, 401);
 
-        return $user;
+        return $user instanceof User ? $user : null;
     }
 
-    private function activeSessionFor(User $user): ?GameSession
+    private function activeSessionFor(?User $user): ?GameSession
     {
+        if ($user === null) {
+            $guestGame = app(GuestGameStore::class)->current();
+
+            return $guestGame?->isActive() === true ? $guestGame : null;
+        }
+
         return GameSession::query()
             ->whereBelongsTo($user)
             ->active()
@@ -269,8 +309,12 @@ class GameBoard extends Component
             ->first();
     }
 
-    private function displaySessionFor(User $user): ?GameSession
+    private function displaySessionFor(?User $user): ?GameSession
     {
+        if ($user === null) {
+            return app(GuestGameStore::class)->current();
+        }
+
         return $this->activeSessionFor($user) ?? GameSession::query()
             ->whereBelongsTo($user)
             ->whereIn('status', [GameSessionStatus::Completed, GameSessionStatus::Abandoned])
@@ -280,7 +324,8 @@ class GameBoard extends Component
 
     private function consumeAttempt(string $action, int $maxAttempts): bool
     {
-        $key = "game-interface:{$action}:".$this->authenticatedUser()->getKey().'|'.request()->ip();
+        $player = $this->currentUser()?->getKey() ?? 'guest:'.session()->getId();
+        $key = "game-interface:{$action}:{$player}|".request()->ip();
 
         if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
             $seconds = RateLimiter::availableIn($key);

@@ -168,3 +168,11 @@
 - Ranking: `CachedLeaderboard` guarda o ranking inteiro ordenado por 10 s; o polling passou para 10 s e só com a aba visível. A consulta pesada roda uma vez por TTL para todos os espectadores.
 - O aviso de página expirada do Livewire (sessão vencida com o jogo aberto) foi trocado por um em pt-BR via `Livewire.interceptRequest`, perguntando uma única vez antes de recarregar.
 - Testes: 218 PHPUnit / 1.478 assertions, JS 11/11, Pint e build aprovados.
+
+## 2026-10-08 — Jogar sem cadastro
+
+- `/game` passou a ser público. O visitante joga com a partida guardada só na sessão HTTP do servidor (`GuestGameStore`), sem migration, sem linhas no banco e fora do ranking. O tabuleiro, a validação das seleções e o score continuam no servidor, reaproveitando gerador, validador, modelo e `ScoreCalculator`.
+- Para registrar a pontuação é preciso entrar ou se cadastrar. `ClaimGuestGameAction` roda no login e no cadastro: partida concluída entra no ranking com o score e a duração originais; ativa continua na conta, exceto se já houver uma ativa; abandonada é descartada.
+- Interface: "Jogar agora" na página inicial, link "Jogar" na navegação para visitantes, aviso durante a partida e botões "Entrar e salvar" / "Criar conta e salvar" ao concluir. `/ranking` e o painel admin continuam exigindo login.
+- Testes: 210 PHPUnit / 1.403 assertions (12 novos, 2 ajustados porque `/game` não redireciona mais para o login), JS 5/5, Pint aprovado.
+- Desenvolvido na branch `feat/guest-play`, num worktree separado, enquanto outro agente tratava erros de frontend na `fix/cpanel-compatibility`. O ZIP `denarius-cacapalavras-be63805a.zip` fica obsoleto: é preciso gerar um pacote novo depois do merge.
