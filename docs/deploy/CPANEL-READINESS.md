@@ -34,7 +34,7 @@ Legenda: `Verificado` significa evidência local disponível; `Pendente` signifi
 | Cache | Configuração padrão `database`; migration cria tabela `cache` | Parcial | Não | Confirmar migration/permissão de leitura e escrita no host |
 | Queue | `.env.example` usa `sync`; código não despacha jobs | Verificado em código | Não | Manter `QUEUE_CONNECTION=sync`; nenhum worker requerido no MVP atual |
 | Scheduler/cron | `routes/console.php` contém somente comando manual `inspire`; sem tarefas agendadas | Verificado em código | Não | Nenhum cron requerido pelo app atual |
-| Ranking/polling | `wire:poll` HTTP a cada 5 segundos; sem WebSocket/Reverb/daemon | Verificado em código | Não | Smoke test via HTTPS e observar custo/carga em evento real |
+| Ranking/polling | `wire:poll.visible` HTTP a cada 10 segundos, com o ranking em cache de 10 segundos; sem WebSocket/Reverb/daemon | Verificado em código | Não | Smoke test via HTTPS e observar custo/carga em evento real |
 | Storage/uploads | Sem upload/uso de `storage/app/public` encontrado; assets em `public/` | Verificado em código | Não | Não executar `storage:link` no momento |
 | Permissões | Permissões cPanel não verificadas | Pendente | Sim | Garantir escrita pelo usuário PHP em `storage/` e `bootstrap/cache`; nunca usar `777` |
 | `.htaccess` | Regras padrão Laravel presentes em `public/.htaccess` | Verificado local | Não | Confirmar Apache/LiteSpeed e rewrite habilitado no host |

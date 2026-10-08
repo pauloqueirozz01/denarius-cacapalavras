@@ -42,7 +42,7 @@ O MVP inclui autenticação, catálogo de termos, jogo responsivo, pontuação c
 - O JavaScript calcula apenas a trajetória visual do gesto e o cronômetro de exibição; o backend continua validando seleção e duração oficial.
 - O score é atualizado na mesma transação do acerto. A fórmula é configurada no backend e congelada em `generation_config.scoring` para auditoria histórica.
 - O ranking considera apenas participantes e partidas `COMPLETED`; cada jogador aparece uma vez pela sua melhor partida e o score é lido diretamente do banco.
-- A classificação em `/ranking` atualiza sua própria área a cada 5 segundos por `wire:poll`; o resultado da partida mostra score, duração, breakdown histórico e melhor posição quando disponível.
+- A classificação em `/ranking` atualiza sua própria área a cada 10 segundos por `wire:poll.visible`, lendo um snapshot do ranking guardado em cache por 10 segundos; o resultado da partida mostra score, duração, breakdown histórico e melhor posição quando disponível.
 - `x-mascot` seleciona assets por estado (`idle.webp`, `correct.webp`, `error.webp`, `celebration.webp`, `victory.webp`, `abandoned.webp`) e usa um SVG provisório original como fallback; a arte final pode substituir os arquivos sem refatorar as views.
 - O painel Filament administra termos (sem exclusão; desativação preserva o catálogo) e oferece consulta somente leitura a usuários e partidas. Apenas administradores acessam o painel; papéis, score, snapshots e sessões não são editáveis pelo backoffice.
 - Respostas HTTP incluem `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` e `Permissions-Policy`. HSTS e CSP ficam pendentes de validação no host/HTTPS e de testes de compatibilidade Livewire.

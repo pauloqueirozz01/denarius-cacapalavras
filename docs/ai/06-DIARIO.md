@@ -158,3 +158,13 @@
 - Pacote `dist/denarius-cacapalavras-be63805a.zip` (21.078.430 bytes, SHA-256 `44481d74e4a3da5d45f8d8919b02ae039c9810cf3fb99cf70842193daccddaf5`), com o conteúdo na raiz para extração em `/home1/denarius/gamefinanceiro.com`. Sem `.env`/`.env.example`, `.git`, `node_modules`, testes, docs, logs, caches compilados ou secrets.
 - Duas sessões de agente trabalharam em paralelo nesta etapa. O ZIP foi regenerado uma vez para excluir `.env.example`, que tinha a senha de desenvolvimento local; vale só o checksum acima.
 - Nenhum deploy, migration de produção, acesso ao cPanel, DNS, SSL ou Document Root foi executado. A readiness do deploy continua `BLOCKED` pelas pendências de infraestrutura do contrato.
+
+## 2026-10-08 — Uso simultâneo em evento
+
+- QA confirmou que o limite de cadastro (3 por minuto por IP) barrava a 4ª pessoa da mesma rede com uma página 429 em inglês.
+- Cadastro: limites em camadas, 5/min por e-mail + IP (volta ao formulário com `old()` e os segundos de espera) e 120/min por IP (página 429 em pt-BR). Login: mantidos 5 falhas/60 s por e-mail + IP, mais um teto de 300 tentativas/min por IP. Tudo configurável por env.
+- Páginas de erro 419/429/500/503 em pt-BR, num layout sem dependência de sessão ou banco. Um 419 no logout volta para a home; no login ou cadastro, volta ao formulário com os dados digitados.
+- Duplo clique: botões de login, cadastro e logout se desabilitam no primeiro envio, com "Entrando…", "Criando conta…" e "Saindo…". A corrida de e-mail duplicado (índice único já existia em `users.email`) vira erro de validação em vez de 500. Os botões do `GameBoard` já tinham `wire:loading.attr="disabled"` e a cobertura de chamadas repetidas já existia.
+- Ranking: `CachedLeaderboard` guarda o ranking inteiro ordenado por 10 s; o polling passou para 10 s e só com a aba visível. A consulta pesada roda uma vez por TTL para todos os espectadores.
+- O aviso de página expirada do Livewire (sessão vencida com o jogo aberto) foi trocado por um em pt-BR via `Livewire.interceptRequest`, perguntando uma única vez antes de recarregar.
+- Testes: 218 PHPUnit / 1.478 assertions, JS 11/11, Pint e build aprovados.

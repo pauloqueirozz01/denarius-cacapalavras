@@ -61,6 +61,16 @@ CACHE_STORE=database
 QUEUE_CONNECTION=sync
 MAIL_MAILER=log
 
+# Evento: 100–300 pessoas na mesma rede (ver "Limites para o evento").
+AUTH_LOGIN_MAX_ATTEMPTS=5
+AUTH_LOGIN_DECAY_SECONDS=60
+AUTH_LOGIN_IP_MAX_ATTEMPTS=300
+AUTH_REGISTER_EMAIL_MAX_ATTEMPTS=5
+AUTH_REGISTER_IP_MAX_ATTEMPTS=120
+AUTH_REGISTER_DECAY_MINUTES=1
+LEADERBOARD_POLL_INTERVAL_SECONDS=10
+LEADERBOARD_CACHE_SECONDS=10
+
 # Somente durante a criação do primeiro administrador; remover em seguida.
 ADMIN_NAME='<PREENCHER_NO_SERVIDOR>'
 ADMIN_EMAIL='<PREENCHER_NO_SERVIDOR>'
@@ -92,9 +102,26 @@ ADMIN_PASSWORD='<PREENCHER_NO_SERVIDOR>'
 
 Têm default adequado no código e só devem ser adicionadas se houver motivo:
 
-- `AUTH_LOGIN_MAX_ATTEMPTS=5`, `AUTH_LOGIN_DECAY_SECONDS=60`, `AUTH_REGISTER_MAX_ATTEMPTS=3`, `AUTH_REGISTER_DECAY_MINUTES=1` (`config/denarius.php`): ajustar somente se o rate limit do evento precisar ser diferente.
+- As variáveis de limite e ranking da seção abaixo já têm esses mesmos valores como default em `config/denarius.php`. Ficam no template para que um ajuste no dia do evento seja só editar o `.env` e rodar `config:cache`.
 - `LOG_STACK=daily` com `LOG_DAILY_DAYS=14`: rotaciona o log se o arquivo único crescer demais.
 - `SESSION_LIFETIME`: aumentar se partidas longas causarem logout.
+
+## Limites para o evento
+
+Cenário: 100–300 pessoas na mesma rede Wi-Fi (um IP público) ou atrás de CGNAT no 4G, cadastrando, jogando e com o ranking aberto ao mesmo tempo.
+
+| Variável | Valor | Por quê |
+|---|---|---|
+| `AUTH_REGISTER_EMAIL_MAX_ATTEMPTS` | `5` por minuto | Por e-mail + IP. Barra quem insiste com o mesmo e-mail; a pessoa volta ao formulário com os dados preenchidos e a mensagem com os segundos de espera. |
+| `AUTH_REGISTER_IP_MAX_ATTEMPTS` | `120` por minuto | Teto da rede inteira. Comporta uma sala de 300 pessoas se cadastrando em poucos minutos, incluindo reenvios por senha fraca; acima disso, é flood (página 429 em pt-BR). O antigo `3` por IP barrava a 4ª pessoa da sala. |
+| `AUTH_LOGIN_MAX_ATTEMPTS` / `AUTH_LOGIN_DECAY_SECONDS` | `5` em `60` s | Falhas por e-mail + IP, sem mudança: protege cada conta contra tentativa de senha. |
+| `AUTH_LOGIN_IP_MAX_ATTEMPTS` | `300` por minuto | Teto da rede para todas as tentativas de login, com ou sem sucesso. Um evento inteiro entrando de uma vez cabe; um robô testando muitos e-mails, não. |
+| `LEADERBOARD_POLL_INTERVAL_SECONDS` | `10` | Cada ranking aberto consulta o servidor nesse intervalo, e só com a aba visível (`wire:poll.visible`). |
+| `LEADERBOARD_CACHE_SECONDS` | `10` | O ranking inteiro fica em cache (`CACHE_STORE=database`) por esse tempo. A consulta pesada roda uma vez por intervalo para todos, não uma vez por celular. Depois de concluir uma partida, a tela de resultado mostra a posição na hora; a página do ranking, em até 10 s. |
+
+Se o evento crescer ou a rede tiver mais gente, aumente os dois tetos por IP. Se o servidor ficar lento com muitos rankings abertos, aumente `LEADERBOARD_CACHE_SECONDS` e `LEADERBOARD_POLL_INTERVAL_SECONDS` (por exemplo para 15). Depois de editar o `.env`, rode `<PHP84_CLI> artisan config:cache`.
+
+As chaves de rate limit e o cache do ranking ficam na tabela `cache`. Sem cron, linhas vencidas não são apagadas automaticamente, mas cada chave é reaproveitada e o volume de um evento é pequeno. Se quiser limpar depois do evento: `<PHP84_CLI> artisan cache:clear`.
 
 ## Variáveis do `.env.example` que não vão para produção
 

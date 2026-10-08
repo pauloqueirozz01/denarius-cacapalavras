@@ -33,7 +33,9 @@ MySQL
 - O guard `web` e a sessão nativa atendem a aplicação pública e o painel.
 - `UserRole` é um enum persistido como string; o `User` centraliza `isAdmin()` e `isParticipant()`.
 - `FilamentUser::canAccessPanel()` permite o painel `admin` somente para administradores.
-- Login limita falhas por e-mail normalizado + IP; cadastro limita requisições por IP.
+- Login limita falhas por e-mail normalizado + IP e tem um teto alto de tentativas por IP; cadastro limita envios por e-mail + IP (volta ao formulário) e tem um teto alto por IP (página 429). Os tetos por IP comportam uma sala de evento na mesma rede.
+- Envio duplicado: formulários marcados com `data-submit-once` desabilitam o botão no primeiro envio (`resources/js/form-submit-guard.js`). No servidor, a corrida de e-mail duplicado vira erro de validação, o 419 de logout volta para a home e o 419 de login/cadastro volta ao formulário com os dados digitados.
+- Páginas de erro 419, 429, 500 e 503 em pt-BR usam `errors/layout`, que não depende de sessão, autenticação nem banco.
 - O cadastro seleciona explicitamente campos seguros e nunca aceita `role` do request.
 - `UserResource` e `GameSessionResource` são somente leitura: não permitem criar/editar/excluir usuários ou partidas. Usuários podem ser pesquisados por nome/e-mail e mostram perfil, quantidade de partidas e maior score concluído; partidas exibem apenas dados operacionais, sem grid ou placements.
 - `FinancialTermResource` permite cadastrar, editar, ativar e desativar termos; exclusão individual/em lote foi removida para evitar perda desnecessária da rastreabilidade do catálogo.
@@ -102,7 +104,7 @@ MySQL
 - A regra SQL aplica score decrescente, duração crescente, conclusão mais antiga e ID da sessão crescente; duração e conclusão nulas ficam explicitamente depois de valores conhecidos.
 - A consulta usa paginação limitada; as posições da página derivam do offset, e a posição individual fora da página conta os participantes que vêm antes da melhor sessão. O histórico não é carregado integralmente para PHP.
 - O score vem sempre de `game_sessions.score`. Nenhuma fórmula é executada no ranking.
-- `LeaderboardBoard` atualiza sua área a cada cinco segundos com `wire:poll`; polling é somente leitura, não inicia partidas e respeita a redução automática de frequência em abas em segundo plano do Livewire.
+- `LeaderboardBoard` atualiza sua área a cada 10 segundos (configurável) com `wire:poll.visible` e lê o ranking por `CachedLeaderboard`, que guarda o ranking inteiro ordenado no cache por um TTL curto (arrays simples, pois o cache não desserializa objetos); a página e a posição do jogador saem do mesmo snapshot; polling é somente leitura, não inicia partidas e respeita a redução automática de frequência em abas em segundo plano do Livewire.
 - A interface pública mostra nome, posição, score e duração. Emails, snapshots, placements e IDs de sessão não são renderizados.
 - `GameBoard` calcula o breakdown final apenas a partir do snapshot de pontuação da sessão e compara o resultado com o score persistido antes de exibi-lo. A posição mostrada é sempre a melhor posição concluída do participante.
 - Não foi mantido índice adicional: no `EXPLAIN FORMAT=JSON` do MySQL local, o plano preferiu o índice existente por status e término; a janela usa ordenação temporária e será reavaliada com volume de evento representativo.
