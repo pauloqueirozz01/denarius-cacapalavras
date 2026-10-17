@@ -4,7 +4,7 @@ Este roteiro prepara a execução futura; nada abaixo foi executado em produçã
 
 ## Deploy via Git™ Version Control (gamefinanceiro.denariusstartup.com.br)
 
-Alternativa ao upload de ZIP, usando a conta `denarius` do cPanel. A branch `deploy` contém só a release pronta: código, `vendor/` de produção gerado em PHP 8.4, `public/build/`, `.cpanel.yml` e `cpanel-deploy.sh`. Ela é montada localmente e nunca editada no servidor.
+Alternativa ao upload de ZIP, usando a conta `denarius` do cPanel. O passo a passo no painel está em [CPANEL-GIT-DEPLOY.md](CPANEL-GIT-DEPLOY.md). A branch `deploy` contém só a release pronta: código, `vendor/` de produção gerado em PHP 8.4, `public/build/`, `.cpanel.yml` e `cpanel-deploy.sh`. Ela é montada localmente e nunca editada no servidor.
 
 | Arquivo | Função |
 |---|---|
