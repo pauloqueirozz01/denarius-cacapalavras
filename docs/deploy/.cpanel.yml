@@ -1,0 +1,7 @@
+---
+# Deploy do Denarius Caça-Palavras (gamefinanceiro.denariusstartup.com.br).
+# O repositório deve estar clonado em ~/repositories/denarius-cacapalavras.
+# Log de cada execução: ~/denarius-deploy.log
+deployment:
+  tasks:
+    - /bin/bash /home1/denarius/repositories/denarius-cacapalavras/cpanel-deploy.sh

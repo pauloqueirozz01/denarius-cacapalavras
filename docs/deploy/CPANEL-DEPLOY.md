@@ -2,6 +2,36 @@
 
 Este roteiro prepara a execução futura; nada abaixo foi executado em produção. A Etapa 11 só começa após confirmar todos os bloqueios de [readiness](CPANEL-READINESS.md) e obter autorização explícita para o deploy.
 
+## Deploy via Git™ Version Control (gamefinanceiro.denariusstartup.com.br)
+
+Alternativa ao upload de ZIP, usando a conta `denarius` do cPanel. A branch `deploy` contém só a release pronta: código, `vendor/` de produção gerado em PHP 8.4, `public/build/`, `.cpanel.yml` e `cpanel-deploy.sh`. Ela é montada localmente e nunca editada no servidor.
+
+| Arquivo | Função |
+|---|---|
+| `docs/deploy/build-release.sh` | Monta a release num diretório temporário e grava um commit novo na branch local `deploy`. Não faz push. |
+| `docs/deploy/Dockerfile` | Imagem PHP 8.4 com `intl` e `zip` usada para gerar `vendor/`. |
+| `docs/deploy/cpanel-deploy.sh` | Executado no servidor pelo `.cpanel.yml`: copia a release para `~/gamefinanceiro.denariusstartup.com.br`, preserva `.env`, `storage/`, `bootstrap/cache/`, `.well-known`, `cgi-bin` e o bloco de handler do MultiPHP no `public/.htaccess`, roda `migrate --force` e gera os caches. |
+| `docs/deploy/.cpanel.yml` | Tarefa única do Git™ Version Control; contém o caminho absoluto do repositório clonado. |
+
+Gerar e publicar uma release:
+
+```bash
+bash docs/deploy/build-release.sh . origin/<branch_aprovada>
+git push origin deploy
+```
+
+A branch `deploy` só avança: o "Update from Remote" do cPanel usa `--ff-only`. Nunca recriar a branch nem usar `push --force`.
+
+No servidor:
+
+1. `~/gamefinanceiro.denariusstartup.com.br/.env` criado antes do primeiro deploy, com permissão `600`. O script aborta sem alterar nada se ele faltar.
+2. Repositório clonado em `~/repositories/denarius-cacapalavras`, branch `deploy`. Se a home da conta não for `/home1/denarius`, ajustar `.cpanel.yml` e gerar nova release.
+3. Subdomínio com Document Root `gamefinanceiro.denariusstartup.com.br/public` e PHP 8.4 no MultiPHP Manager.
+4. Backup do banco antes de cada "Deploy HEAD Commit".
+5. Primeiro deploy com `ADMIN_*` preenchido cria o administrador e não gera config cache; esvaziar as três variáveis e fazer o deploy de novo.
+6. O catálogo de termos é semeado só no primeiro deploy (marcador `storage/app/.financial-terms-seeded`).
+7. Saída de cada deploy: `~/denarius-deploy.log`. Se o deploy falhar depois da cópia, o site fica em manutenção até a correção.
+
 ## Pré-condições obrigatórias
 
 1. Domínio/DNS criados, HTTPS válido e renovação automática confirmada.
