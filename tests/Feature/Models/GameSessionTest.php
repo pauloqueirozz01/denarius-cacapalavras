@@ -23,6 +23,7 @@ class GameSessionTest extends TestCase
         $this->assertSame(GameSessionStatus::Active, $session->status);
         $this->assertIsArray($session->grid);
         $this->assertIsArray($session->generation_config);
+        $this->assertSame(0, $session->score);
         $this->assertSame($user->id, $session->user->id);
         $this->assertTrue($user->gameSessions->contains($session));
     }
@@ -102,11 +103,34 @@ class GameSessionTest extends TestCase
             'columns' => 1,
             'total_words' => 1,
             'found_words_count' => 1,
+            'score' => 999999,
             'generation_config' => [],
             'started_at' => now(),
             'finished_at' => now(),
             'duration_seconds' => 0,
         ]);
 
+    }
+
+    public function test_score_cannot_be_negative(): void
+    {
+        $session = GameSession::factory()->active()->create();
+        $session->score = -1;
+
+        $this->expectException(InvalidGameSessionSnapshotException::class);
+        $this->expectExceptionMessage('score não pode ser negativo');
+
+        $session->save();
+    }
+
+    public function test_persisted_score_cannot_be_reduced(): void
+    {
+        $session = GameSession::factory()->active()->create(['score' => 100]);
+        $session->score = 50;
+
+        $this->expectException(InvalidGameSessionSnapshotException::class);
+        $this->expectExceptionMessage('score não pode ser reduzido');
+
+        $session->save();
     }
 }

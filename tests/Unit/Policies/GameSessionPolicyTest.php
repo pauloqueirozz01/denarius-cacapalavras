@@ -51,6 +51,14 @@ class GameSessionPolicyTest extends TestCase
         $this->assertFalse($policy->forceDelete($user, $session));
     }
 
+    public function test_admin_can_view_a_session_in_the_read_only_admin_panel(): void
+    {
+        $admin = User::factory()->admin()->make(['id' => 10]);
+        $session = GameSession::factory()->make(['user_id' => 20]);
+
+        $this->assertTrue((new GameSessionPolicy)->view($admin, $session));
+    }
+
     /**
      * @return array<string, array{string}>
      */

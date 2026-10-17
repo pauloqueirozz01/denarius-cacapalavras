@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" shape-rendering="crispEdges" role="img" aria-labelledby="title desc">
+  <title id="title">Onça Denarius — arte provisória</title>
+  <desc id="desc">Rosto original de uma onça em estilo pixel-art, com pelagem dourada e detalhes roxos.</desc>
+  <rect width="128" height="128" rx="20" fill="#35105b"/>
+  <path fill="#8d43f6" d="M24 20h16V8h16v12h16V8h16v12h16v16h8v56h-8v16h-16v12H40v-12H24V96h-8V40h8z"/>
+  <path fill="#f5bd4e" d="M32 28h16V16h8v20h16V16h8v12h16v12h8v44h-8v16H80v8H48v-8H32V84h-8V40h8z"/>
+  <path fill="#f5bd4e" d="M24 36H16v20h8zm80 0h8v20h-8z"/>
+  <path fill="#5a2b25" d="M32 40h8v8h-8zm16-8h8v8h-8zm24 0h8v8h-8zm16 8h8v8h-8zM24 56h8v8h-8zm72 0h8v8h-8zM32 72h8v8h-8zm56 0h8v8h-8zM40 88h8v8h-8zm40 0h8v8h-8z"/>
+  <path fill="#fff1ca" d="M40 68h16v-8h8v8h8v-8h8v8h16v12H88v12H72v8H56v-8H40V80H32V68z"/>
+  <path fill="#260941" d="M40 48h16v8H40zm32 0h16v8H72z"/>
+  <path fill="#65e6d4" d="M44 48h8v8h-8zm32 0h8v8h-8z"/>
+  <path fill="#260941" d="M56 76h16v8H56zm8 8h8v8h-8z"/>
+  <path fill="#8d43f6" d="M16 108h24v8h48v-8h24v8h-8v8H24v-8h-8z"/>
+  <path fill="#fff" d="M16 20h8v8h-8zm88 80h8v8h-8z" opacity=".75"/>
+</svg>

@@ -15,6 +15,7 @@ use App\Models\FinancialTerm;
 use App\Models\GameSession;
 use App\Models\User;
 use App\Services\GameSessionSnapshotValidator;
+use App\Services\ScoreCalculator;
 use App\Services\WordSearchGeneratorService;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,10 +50,16 @@ class StartGameSessionActionTest extends TestCase
         $this->assertSame(7, $session->columns);
         $this->assertSame(2, $session->total_words);
         $this->assertSame(0, $session->found_words_count);
+        $this->assertSame(0, $session->score);
         $this->assertSame('2026-10-06 12:00:00', $session->started_at->toDateTimeString());
         $this->assertNull($session->finished_at);
         $this->assertNull($session->duration_seconds);
-        $this->assertSame(['rows' => 2, 'columns' => 7, 'word_count' => 2], $session->generation_config);
+        $this->assertSame([
+            'rows' => 2,
+            'columns' => 7,
+            'word_count' => 2,
+            'scoring' => config('denarius.scoring'),
+        ], $session->generation_config);
         $this->assertCount(2, $session->words);
         $this->assertDatabaseCount('game_session_words', 2);
     }
@@ -95,7 +102,7 @@ class StartGameSessionActionTest extends TestCase
             'description' => 'Ação.',
         ]);
         $generator = new WordSearchGeneratorService(new Randomizer(new Mt19937(5050)));
-        $action = new StartGameSessionAction($generator, new GameSessionSnapshotValidator);
+        $action = new StartGameSessionAction($generator, new GameSessionSnapshotValidator, new ScoreCalculator);
 
         $session = $action->execute($user, rows: 10, columns: 10, wordCount: 3);
 
@@ -112,7 +119,7 @@ class StartGameSessionActionTest extends TestCase
         GameSession::factory()->for($user)->active()->create();
         $generator = Mockery::mock(WordSearchGeneratorService::class);
         $generator->shouldNotReceive('generate');
-        $action = new StartGameSessionAction($generator, new GameSessionSnapshotValidator);
+        $action = new StartGameSessionAction($generator, new GameSessionSnapshotValidator, new ScoreCalculator);
 
         try {
             $action->execute($user);
@@ -225,6 +232,6 @@ class StartGameSessionActionTest extends TestCase
         $generator = Mockery::mock(WordSearchGeneratorService::class);
         $generator->shouldReceive('generate')->once()->andReturn($result);
 
-        return new StartGameSessionAction($generator, new GameSessionSnapshotValidator);
+        return new StartGameSessionAction($generator, new GameSessionSnapshotValidator, new ScoreCalculator);
     }
 }

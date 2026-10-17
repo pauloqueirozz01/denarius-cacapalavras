@@ -21,6 +21,7 @@ class AbandonGameSessionActionTest extends TestCase
         $user = User::factory()->create();
         $session = GameSession::factory()->for($user)->active()->create([
             'started_at' => now()->subSeconds(45),
+            'score' => 200,
         ]);
 
         $abandonedSession = (new AbandonGameSessionAction)->execute($user, $session);
@@ -28,6 +29,7 @@ class AbandonGameSessionActionTest extends TestCase
         $this->assertSame(GameSessionStatus::Abandoned, $abandonedSession->status);
         $this->assertSame('2026-10-06 12:00:45', $abandonedSession->finished_at->toDateTimeString());
         $this->assertSame(45, $abandonedSession->duration_seconds);
+        $this->assertSame(200, $abandonedSession->score);
     }
 
     public function test_completed_session_cannot_be_abandoned(): void

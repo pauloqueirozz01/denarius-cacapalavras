@@ -10,11 +10,23 @@ class AuthorizationTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
-    public function test_guest_is_redirected_to_login_from_game(): void
+    public function test_guest_can_open_the_game_without_login(): void
     {
-        $response = $this->get(route('game'));
+        $this->get(route('game'))
+            ->assertOk()
+            ->assertSee('Olá, visitante')
+            ->assertSee('Você pode jogar sem cadastro.');
+    }
 
-        $response->assertRedirectToRoute('login');
+    public function test_guest_is_redirected_to_login_from_ranking(): void
+    {
+        $this->get(route('ranking'))->assertRedirectToRoute('login');
+    }
+
+    public function test_guest_cannot_open_the_admin_panel(): void
+    {
+        $this->get(route('filament.admin.pages.dashboard'))
+            ->assertRedirectToRoute('filament.admin.auth.login');
     }
 
     public function test_participant_can_access_game(): void

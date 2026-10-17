@@ -12,5 +12,9 @@ readonly class WordSelectionResult
         public GameSessionWord $word,
         public bool $wasNewlyFound,
         public bool $completedSession,
+        public int $pointsAwarded,
+        public int $wordPoints,
+        public int $completionBonus,
+        public int $speedBonus,
     ) {}
 }

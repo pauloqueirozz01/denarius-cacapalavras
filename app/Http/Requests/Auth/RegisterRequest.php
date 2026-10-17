@@ -68,6 +68,9 @@ class RegisterRequest extends FormRequest
             'email.unique' => 'Este e-mail já está cadastrado.',
             'password.required' => 'Informe uma senha.',
             'password.confirmed' => 'A confirmação da senha não confere.',
+            'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
+            'password.mixed' => 'A senha deve conter pelo menos uma letra maiúscula e uma minúscula.',
+            'password.numbers' => 'A senha deve conter pelo menos um número.',
         ];
     }
 }

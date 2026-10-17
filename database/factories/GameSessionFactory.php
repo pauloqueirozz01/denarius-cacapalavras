@@ -33,10 +33,12 @@ class GameSessionFactory extends Factory
             'columns' => 5,
             'total_words' => 1,
             'found_words_count' => 0,
+            'score' => 0,
             'generation_config' => [
                 'rows' => 3,
                 'columns' => 5,
                 'word_count' => 1,
+                'scoring' => config('denarius.scoring'),
             ],
             'started_at' => $startedAt,
             'finished_at' => null,

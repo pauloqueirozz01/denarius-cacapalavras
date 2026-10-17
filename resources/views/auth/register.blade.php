@@ -5,7 +5,7 @@
 @section('content')
     <div class="mx-auto flex min-h-[calc(100vh-73px)] max-w-6xl items-center justify-center px-5 py-12">
         <x-auth-card title="Entre no desafio" description="Crie sua conta de participante e prepare-se para aprender jogando.">
-            <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-5">
+            <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-5" data-submit-once>
                 @csrf
 
                 <div class="flex flex-col gap-2">
@@ -40,7 +40,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="rounded-xl bg-denarius-600 px-5 py-3 font-black text-white shadow-lg shadow-denarius-600/20 hover:bg-denarius-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-denarius-700">
+                <button type="submit" data-submitting-label="Criando conta…" class="rounded-xl bg-denarius-600 disabled:cursor-wait disabled:opacity-70 px-5 py-3 font-black text-white shadow-lg shadow-denarius-600/20 hover:bg-denarius-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-denarius-700">
                     Criar conta
                 </button>
             </form>

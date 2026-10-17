@@ -16,11 +16,30 @@
 - A forma normalizada de um termo é automática, contém somente `A-Z`, possui no máximo 24 letras e é única.
 - Termos equivalentes após remoção de acentos, espaços e símbolos não podem coexistir.
 - Somente administradores gerenciam o catálogo; participantes não recebem uma listagem pública.
-- Uma sessão pertence ao usuário autenticado.
+- A operação administrativa do catálogo não exclui termos: desativar remove o termo de sorteios futuros sem apagar sua rastreabilidade; snapshots antigos continuam autossuficientes.
+- Recursos de usuários e partidas no Filament são apenas para consulta por administradores; alteração de papéis, score, estado, duração, grid e placements não faz parte do MVP operacional.
+- Uma sessão persistida pertence ao usuário autenticado.
+- Visitante joga sem conta: a partida fica só na sessão HTTP do servidor (`GuestGameStore`), nunca no banco nem no ranking, com o mesmo gerador, as mesmas regras de estado e o mesmo cálculo de score.
+- No login ou cadastro, `ClaimGuestGameAction` grava a partida do visitante na conta: concluída entra no ranking com o score e a duração medidos durante o jogo; ativa continua na conta, exceto se a conta já tiver uma partida ativa, caso em que é descartada; abandonada é descartada.
 - Um usuário possui no máximo uma sessão `ACTIVE`; nova criação é rejeitada até conclusão ou abandono explícito.
 - Uma seleção só é válida se suas coordenadas corresponderem exatamente a uma palavra da sessão, em qualquer dos dois sentidos.
 - Repetir uma seleção já encontrada é uma operação idempotente e não altera o contador.
 - O cliente nunca define pontuação, status, duração ou contadores.
+- Cada palavra gera pontos somente no primeiro acerto; repetição, seleção inválida e sessão final não alteram o score.
+- O bônus de conclusão e o bônus de velocidade são aplicados somente na transição única para `COMPLETED`.
+- Sessões `ABANDONED` preservam os pontos das palavras já encontradas e nunca recebem bônus finais.
+- O score nunca é negativo nem pode diminuir, é persistido e sobrevive ao reload.
+- A regra usada por uma partida pertence ao seu snapshot e não muda com alterações posteriores da configuração global.
+- Somente usuários `participant` com ao menos uma sessão `COMPLETED` são elegíveis ao ranking.
+- Cada usuário aparece uma única vez, pela sua melhor sessão concluída, e `score` é lido do valor persistido.
+- A ordenação da melhor partida e do ranking global é: score decrescente, duração crescente, `finished_at` mais antigo e ID de sessão crescente.
+- Para registros concluídos legados com duração ou término nulos, valores conhecidos vêm primeiro; o ID final mantém ordem total determinística.
+- A seleção da melhor tentativa usa `NOT EXISTS` com comparador lexicográfico equivalente à ordenação e não utiliza funções de janela; a posição paginada usa offset e a posição individual conta os participantes anteriores.
+- A posição individual representa sempre a melhor partida concluída, mesmo quando o resultado recém-finalizado não substitui o recorde.
+- Sessões `ACTIVE` e `ABANDONED` nunca entram no ranking, mesmo que tenham score.
+- Ler/atualizar ranking por polling não altera sessões nem cria partidas.
+- O mascote é apenas apresentação: seus estados não são entrada do domínio e não alteram pontos, estado ou duração.
+- O tutorial explica a fórmula congelada no snapshot da sessão; sem sessão, usa a configuração padrão vigente.
 - O cliente também não define grid, placements, palavras ou timestamps.
 - `total_words` corresponde ao número de snapshots de palavras e `found_words_count` permanece entre zero e o total.
 - A última palavra encontrada conclui automaticamente a sessão na mesma transação.
@@ -67,6 +86,20 @@ ACTIVE
 - Termos são exibidos com `original_term`; `normalized_term` continua sendo a representação do grid.
 - O cronômetro visual pode avançar localmente, mas reload usa `started_at` e conclusão usa `duration_seconds` oficial.
 - Somente placements já encontrados podem gerar destaques permanentes no HTML; soluções pendentes não são expostas.
+- A interface apenas renderiza `GameSession.score` e o detalhamento devolvido pela action; nenhuma fórmula existe em Blade ou JavaScript.
+- Após concluir, o participante vê score, duração oficial, detalhamento reconstruído do snapshot histórico quando consistente, melhor posição e links para ranking e nova partida.
+- `/ranking` exige autenticação; o quadro periódico divulga somente nome, posição, score e duração, nunca email ou dados internos da sessão.
+- Feedback de acerto, erro, marco de progresso, vitória e abandono deriva do estado/resposta do backend; nenhum estado do mascote é aceito como prova de acerto.
+
+## Fórmula de pontuação
+
+- Palavra encontrada: 100 pontos.
+- Conclusão da partida: 500 pontos.
+- Conclusão em até 120 segundos: 500 pontos de velocidade.
+- Conclusão entre 121 e 180 segundos: 300 pontos de velocidade.
+- Conclusão entre 181 e 300 segundos: 150 pontos de velocidade.
+- Acima de 300 segundos: nenhum bônus de velocidade.
+- Máximo padrão: `total_words * 100 + 1.000`; com 10 palavras, 2.000 pontos.
 
 ## Dificuldade dos termos
 

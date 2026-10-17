@@ -12,6 +12,11 @@
 - [x] Implementar motor configurável do caça-palavras, oito direções, randomização controlável e contratos de resultado.
 - [x] Implementar sessões persistentes, snapshots auditáveis, máquina de estados, actions transacionais e antitrapaça básica.
 - [x] Implementar interface Livewire responsiva com Pointer Events, retomada, tutorial e estados completos da partida.
+- [x] Implementar pontuação autoritativa, bônus transacionais, snapshot da fórmula e integração com a interface.
+- [x] Implementar ranking, atualização Livewire quase em tempo real e fechamento do fluxo do jogador.
+- [x] Refinar mascote substituível, tutorial, feedback visual, acessibilidade e responsividade.
+- [x] Fechar consultas operacionais do Filament, estabilização QA, cabeçalhos de segurança e roteiro/readiness cPanel (sem deploy de produção).
+- [x] Check-up pré-deploy cPanel: remover dependência de window functions do ranking, alinhar requisito PHP ao lock e definir contrato técnico da Etapa 11.
 
 ## Próximas etapas
 
@@ -20,14 +25,13 @@
 - [x] Etapa 4: gerador determinístico, oito direções e testes de borda/colisão.
 - [x] Etapa 5: sessões, snapshots, actions transacionais e antitrapaça.
 - [x] Etapa 6: interface Livewire responsiva com mouse/touch e base acessível.
-- [ ] Etapa 7: pontuação centralizada e transparente.
-- [ ] Etapa 8: ranking indexado com `wire:poll`.
-- [ ] Etapa 9: componente de mascote com assets substituíveis.
-- [ ] Etapa 10: tutorial acessível em modal/drawer.
-- [ ] Etapa 11: painel e resources Filament protegidos.
-- [ ] Etapa 12: cobertura completa e testes de fluxo.
-- [ ] Etapa 13: auditoria de segurança e dependências.
-- [ ] Etapa 14: documentação de demonstração/deploy.
+- [x] Etapa 7: pontuação centralizada e transparente.
+- [x] Etapa 8: ranking + atualização quase em tempo real + fechamento do fluxo do jogador.
+- [x] Etapa 9: mascote/onça 8-bit + tutorial + feedback visual + polimento e responsividade.
+- [x] Etapa 10: Filament final + QA + auditoria de segurança + correções + preparação pré-deploy cPanel.
+- [ ] Etapa 11: deploy + documentação final do MVP.
+
+Este roadmap condensado substitui o cronograma anterior de 14 etapas; etapas concluídas não serão reabertas salvo regressão.
 
 ## Definition of Done por etapa
 

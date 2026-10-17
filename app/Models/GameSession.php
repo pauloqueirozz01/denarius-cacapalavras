@@ -27,6 +27,7 @@ class GameSession extends Model
     protected $attributes = [
         'status' => GameSessionStatus::Active->value,
         'found_words_count' => 0,
+        'score' => 0,
     ];
 
     public function user(): BelongsTo
@@ -94,6 +95,7 @@ class GameSession extends Model
             'columns' => 'integer',
             'total_words' => 'integer',
             'found_words_count' => 'integer',
+            'score' => 'integer',
             'generation_config' => 'array',
             'started_at' => 'immutable_datetime',
             'finished_at' => 'immutable_datetime',
@@ -126,6 +128,16 @@ class GameSession extends Model
                 if ($session->isDirty('status') && ! $originalStatus->canTransitionTo($session->status)) {
                     throw InvalidGameSessionStateException::invalidTransition($originalStatus, $session->status);
                 }
+
+                if ($session->isDirty('score')) {
+                    if ($session->score < 0) {
+                        throw InvalidGameSessionSnapshotException::invalid('score não pode ser negativo.');
+                    }
+
+                    if ($session->score < (int) $session->getRawOriginal('score')) {
+                        throw InvalidGameSessionSnapshotException::invalid('score não pode ser reduzido.');
+                    }
+                }
             }
 
             $session->assertConsistentState();
@@ -147,6 +159,10 @@ class GameSession extends Model
             throw InvalidGameSessionSnapshotException::invalid(
                 'found_words_count deve permanecer entre zero e total_words.',
             );
+        }
+
+        if ($this->score < 0) {
+            throw InvalidGameSessionSnapshotException::invalid('score não pode ser negativo.');
         }
 
         if ($this->started_at === null) {

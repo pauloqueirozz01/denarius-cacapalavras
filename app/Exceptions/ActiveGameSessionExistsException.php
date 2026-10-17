@@ -11,4 +11,9 @@ class ActiveGameSessionExistsException extends Exception implements ShouldntRepo
     {
         return new self("O usuário {$userId} já possui uma partida ativa.");
     }
+
+    public static function forGuest(): self
+    {
+        return new self('O visitante já possui uma partida ativa.');
+    }
 }

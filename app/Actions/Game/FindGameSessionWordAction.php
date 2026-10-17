@@ -7,12 +7,18 @@ use App\Exceptions\InvalidWordSelectionException;
 use App\Models\GameSession;
 use App\Models\GameSessionWord;
 use App\Models\User;
+use App\Services\CachedLeaderboard;
+use App\Services\ScoreCalculator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class FindGameSessionWordAction
 {
+    public function __construct(
+        private readonly ScoreCalculator $scoreCalculator,
+    ) {}
+
     public function execute(
         User $user,
         GameSession $session,
@@ -23,7 +29,7 @@ class FindGameSessionWordAction
     ): WordSelectionResult {
         Gate::forUser($user)->authorize('markWord', $session);
 
-        return DB::transaction(function () use (
+        $result = DB::transaction(function () use (
             $session,
             $startRow,
             $startColumn,
@@ -61,6 +67,10 @@ class FindGameSessionWordAction
                     word: $word,
                     wasNewlyFound: false,
                     completedSession: false,
+                    pointsAwarded: 0,
+                    wordPoints: 0,
+                    completionBonus: 0,
+                    speedBonus: 0,
                 );
             }
 
@@ -80,6 +90,13 @@ class FindGameSessionWordAction
                 $lockedSession->complete($foundAt);
             }
 
+            $scoreCalculator = $this->scoreCalculatorFor($lockedSession);
+            $scoreAward = $scoreCalculator->awardForFoundWord(
+                completesSession: $completedSession,
+                durationSeconds: $lockedSession->duration_seconds,
+            );
+            $lockedSession->score += $scoreAward->total();
+
             $lockedSession->save();
 
             return new WordSelectionResult(
@@ -87,8 +104,27 @@ class FindGameSessionWordAction
                 word: $word,
                 wasNewlyFound: true,
                 completedSession: $completedSession,
+                pointsAwarded: $scoreAward->total(),
+                wordPoints: $scoreAward->wordPoints,
+                completionBonus: $scoreAward->completionBonus,
+                speedBonus: $scoreAward->speedBonus,
             );
         }, 3);
+
+        if ($result->completedSession) {
+            CachedLeaderboard::invalidate();
+        }
+
+        return $result;
+    }
+
+    private function scoreCalculatorFor(GameSession $session): ScoreCalculator
+    {
+        $configuration = $session->generation_config['scoring'] ?? null;
+
+        return is_array($configuration)
+            ? new ScoreCalculator($configuration)
+            : $this->scoreCalculator;
     }
 
     private function findMatchingWord(

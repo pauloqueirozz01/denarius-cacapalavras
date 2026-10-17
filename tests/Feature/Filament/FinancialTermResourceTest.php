@@ -9,7 +9,6 @@ use App\Filament\Resources\FinancialTerms\Pages\EditFinancialTerm;
 use App\Filament\Resources\FinancialTerms\Pages\ListFinancialTerms;
 use App\Models\FinancialTerm;
 use App\Models\User;
-use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Livewire\Livewire;
@@ -114,17 +113,27 @@ class FinancialTermResourceTest extends TestCase
         $this->assertTrue($term->refresh()->is_active);
     }
 
-    public function test_admin_can_delete_a_term(): void
+    public function test_admin_cannot_delete_a_term_and_can_deactivate_it_instead(): void
     {
         $admin = User::factory()->admin()->create();
         $term = FinancialTerm::factory()->create(['term' => 'Tarifa']);
         $this->actingAs($admin);
 
-        Livewire::test(EditFinancialTerm::class, ['record' => $term->getRouteKey()])
-            ->callAction(DeleteAction::class)
-            ->assertNotified();
+        Livewire::test(ListFinancialTerms::class)
+            ->assertTableActionDoesNotExist('delete', record: $term)
+            ->assertCanSeeTableRecords([$term]);
 
-        $this->assertModelMissing($term);
+        $this->assertFalse($admin->can('delete', $term));
+
+        Livewire::test(EditFinancialTerm::class, ['record' => $term->getRouteKey()])
+            ->fillForm(['is_active' => false])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('financial_terms', [
+            'id' => $term->id,
+            'is_active' => false,
+        ]);
     }
 
     public function test_equivalent_term_is_rejected_by_form_validation(): void

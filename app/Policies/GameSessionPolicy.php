@@ -20,7 +20,7 @@ class GameSessionPolicy
      */
     public function view(User $user, GameSession $gameSession): bool
     {
-        return $this->owns($user, $gameSession);
+        return $user->isAdmin() || $this->owns($user, $gameSession);
     }
 
     /**
